@@ -12,6 +12,7 @@
   "description": "",
   "dependencies": {
     "@clerk/clerk-react": "^5.59.2",
+    "@clerk/express": "^1.7.41",
     "express": "^5.2.1"
   }
 }
