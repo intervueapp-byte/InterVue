@@ -38,6 +38,7 @@ if (ENV.NODE_ENV === "production") {
   });
 }
 
+
 const startServer = async () => {
   try {
     await connectDB();
