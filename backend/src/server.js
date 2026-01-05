@@ -15,6 +15,14 @@ const app = express();
 
 const __dirname = path.resolve();
 
+app.use(express.json());
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://intervue1.netlify.app"
+  ]
+}));
+
 // middleware
 app.use(express.json());
 // credentials:true meaning?? => server allows a browser to include cookies on request
