@@ -3,6 +3,7 @@ import { BookOpenIcon, LayoutDashboardIcon, SparklesIcon } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 
+
 function Navbar() {
   const location = useLocation();
   const [dark, setDark] = useState(false);
@@ -45,7 +46,7 @@ const toggleTheme = () => {
 
           <div className="flex flex-col">
             <span className="font-black text-xl bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent font-mono tracking-wider">
-            InterVue
+            IVue
             </span>
             <span className="text-xs text-base-content/60 font-medium -mt-1">Code</span>
           </div>
@@ -67,6 +68,23 @@ const toggleTheme = () => {
             <div className="flex items-center gap-x-2.5">
               <BookOpenIcon className="size-4" />
               <span className="font-medium hidden sm:inline">Problems</span>
+            </div>
+          </Link>
+   
+   <Link
+            to={"/quiz"}
+            className={`px-4 py-2.5 rounded-lg transition-all duration-200 
+              ${
+                isActive("/quiz")
+                  ? "bg-primary text-primary-content"
+                  : "hover:bg-base-200 text-base-content/70 hover:text-base-content"
+              }
+              
+              `}
+          >
+            <div className="flex items-center gap-x-2.5">
+              <BookOpenIcon className="size-4" />
+              <span className="font-medium hidden sm:inline"> Quiz</span>
             </div>
           </Link>
  <div className="glass-theme-switch">
