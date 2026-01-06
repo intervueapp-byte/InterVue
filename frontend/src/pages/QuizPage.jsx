@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Navbar from "../components/Navbar";
 
 const questions = [
   {
@@ -58,6 +59,10 @@ const questions = [
   },
 ];
 
+
+
+
+
 export default function QuizPage() {
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -78,7 +83,11 @@ export default function QuizPage() {
     }
   };
 
+  
   return (
+     <>
+      {/* NAVBAR */}
+      <Navbar />
     <div className="min-h-screen bg-base-200 flex justify-center items-center px-4">
       <div className="bg-base-100 p-6 rounded-xl shadow-lg max-w-xl w-full">
         {!finished ? (
@@ -129,5 +138,8 @@ export default function QuizPage() {
         )}
       </div>
     </div>
+    </>
   );
+  
 }
+

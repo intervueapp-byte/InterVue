@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { useUser } from "@clerk/clerk-react";
-import { useState } from "react";
+
 import { useActiveSessions, useCreateSession, useMyRecentSessions } from "../hooks/useSessions";
 
 import Navbar from "../components/Navbar";
@@ -9,6 +9,8 @@ import StatsCards from "../components/StatsCards";
 import ActiveSessions from "../components/ActiveSessions";
 import RecentSessions from "../components/RecentSessions";
 import CreateSessionModal from "../components/CreateSessionModal";
+import { useEffect, useState } from "react";
+import { Trophy } from "lucide-react";
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -47,6 +49,41 @@ function DashboardPage() {
     return session.host?.clerkId === user.id || session.participant?.clerkId === user.id;
   };
 
+  const Dashboard = () => {
+  const [quizScore, setQuizScore] = useState(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("latestQuizScore");
+    if (stored) {
+      setQuizScore(JSON.parse(stored));
+    }
+  }, []);
+  
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+
+      {quizScore && (
+        <div className="bg-zinc-900/60 backdrop-blur rounded-2xl p-5 w-[280px] shadow-md border border-zinc-800">
+          <div className="flex items-center gap-2 mb-3">
+            <Trophy className="text-yellow-400 w-5 h-5" />
+            <h2 className="font-semibold text-lg">
+              Latest Quiz
+            </h2>
+          </div>
+
+          <p className="text-2xl font-bold text-green-400">
+            {quizScore.score} / {quizScore.total}
+          </p>
+
+          <p className="text-sm text-zinc-400 mt-1">
+            {quizScore.date}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
   return (
     <>
       <div className="min-h-screen bg-base-300">
@@ -82,5 +119,6 @@ function DashboardPage() {
     </>
   );
 }
+
 
 export default DashboardPage;

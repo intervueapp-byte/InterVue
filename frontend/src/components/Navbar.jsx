@@ -2,6 +2,10 @@ import { Link, useLocation } from "react-router";
 import { BookOpenIcon, LayoutDashboardIcon, SparklesIcon } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
+import { Brain } from "lucide-react";
+
+
+
 
 
 function Navbar() {
@@ -83,7 +87,7 @@ const toggleTheme = () => {
               `}
           >
             <div className="flex items-center gap-x-2.5">
-              <BookOpenIcon className="size-4" />
+              <Brain className="size-4" />
               <span className="font-medium hidden sm:inline"> Quiz</span>
             </div>
           </Link>

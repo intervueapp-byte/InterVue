@@ -1,5 +1,6 @@
 import { Github, Linkedin, Mail } from "lucide-react";
 
+
 export default function footer() {
   return (
     <footer className="bg-base-100/80 backdrop-blur-md border-t border-primary/20">
