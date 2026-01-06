@@ -11,18 +11,6 @@ import SessionPage from "./pages/SessionPage";
 import Footer from "./components/footer";
 
 function App() {
-  return (
-    <div className="min-h-screen flex flex-col">
-      {/* Your main content */}
-      <main className="flex-grow">
-        {/* routes / pages */}
-      </main>
-
-      <Footer />
-    </div>
-  );
-}
-function App() {
   const { isSignedIn, isLoaded } = useUser();
 
   // this will get rid of the flickering effect
@@ -41,6 +29,17 @@ function App() {
 
       <Toaster toastOptions={{ duration: 3000 }} />
     </>
+  );
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* Your main content */}
+      <main className="flex-grow">
+        {/* routes / pages */}
+      </main>
+
+      <Footer />
+    </div>
   );
 }
 
