@@ -8,8 +8,6 @@ import ProblemPage from "./pages/ProblemPage";
 import ProblemsPage from "./pages/ProblemsPage";
 import SessionPage from "./pages/SessionPage";
 
-import Footer from "./components/footer";
-
 function App() {
   const { isSignedIn, isLoaded } = useUser();
 
@@ -31,16 +29,7 @@ function App() {
     </>
   );
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      {/* Your main content */}
-      <main className="flex-grow">
-        {/* routes / pages */}
-      </main>
-
-      <Footer />
-    </div>
-  );
+ 
 }
 
 export default App;

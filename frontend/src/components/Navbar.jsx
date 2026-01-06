@@ -1,9 +1,31 @@
 import { Link, useLocation } from "react-router";
 import { BookOpenIcon, LayoutDashboardIcon, SparklesIcon } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
+import { useEffect, useState } from "react";
 
 function Navbar() {
   const location = useLocation();
+  const [dark, setDark] = useState(false);
+
+useEffect(() => {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+    setDark(true);
+  }
+}, []);
+
+const toggleTheme = () => {
+  if (dark) {
+    document.documentElement.setAttribute("data-theme", "light");
+    localStorage.setItem("theme", "light");
+  } else {
+    document.documentElement.setAttribute("data-theme", "dark");
+    localStorage.setItem("theme", "dark");
+  }
+  setDark(!dark);
+};
+
 
   console.log(location);
 
@@ -47,6 +69,20 @@ function Navbar() {
               <span className="font-medium hidden sm:inline">Problems</span>
             </div>
           </Link>
+ <div className="glass-theme-switch">
+  <input
+    type="checkbox"
+    id="themeToggle"
+    checked={dark}
+    onChange={toggleTheme}
+  />
+  <label htmlFor="themeToggle" className="glass-switch">
+    <span className="glass-icon sun">☀️</span>
+    <span className="glass-icon moon">🌙</span>
+  </label>
+</div>
+
+
 
           {/* DASHBORD PAGE LINK */}
           <Link

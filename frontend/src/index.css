@@ -10,3 +10,74 @@
     cursor: pointer;
   }
 }
+/* ===== GLASS TOGGLE ===== */
+.glass-theme-switch {
+  display: flex;
+  align-items: center;
+}
+
+.glass-theme-switch input {
+  display: none;
+}
+
+.glass-switch {
+  position: relative;
+  width: 58px;
+  height: 30px;
+  border-radius: 999px;
+  cursor: pointer;
+
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+
+  transition: background 0.4s ease;
+}
+
+/* SLIDING CIRCLE */
+.glass-switch::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fde68a, #f59e0b);
+  transition: transform 0.4s cubic-bezier(.4,0,.2,1);
+}
+
+/* MOVE ON CHECK */
+input:checked + .glass-switch::before {
+  transform: translateX(26px);
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+}
+
+/* ICONS */
+.glass-icon {
+  position: absolute;
+  top: 6px;
+  font-size: 13px;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.sun {
+  left: 8px;
+}
+
+.moon {
+  right: 8px;
+  opacity: 0;
+}
+
+input:checked + .glass-switch .sun {
+  opacity: 0;
+}
+
+input:checked + .glass-switch .moon {
+  opacity: 1;
+}
