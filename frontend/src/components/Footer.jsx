@@ -1,7 +1,6 @@
 import { Github, Linkedin, Mail } from "lucide-react";
 
-
-export default function footer() {
+export default function Footer() {
   return (
     <footer className="bg-base-100/80 backdrop-blur-md border-t border-primary/20">
       <div
@@ -18,7 +17,10 @@ export default function footer() {
       >
         {/* Brand */}
         <div className="space-y-3">
-          <h2 className="text-xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+          <h2
+            onClick={() => (window.location.href = "/")}
+            className="text-xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent cursor-pointer"
+          >
             InterVue
           </h2>
           <p className="text-sm text-base-content/70 leading-relaxed">
@@ -32,10 +34,18 @@ export default function footer() {
             Product
           </h3>
           <ul className="space-y-2 text-sm text-base-content/70">
-            <li className="hover:text-primary cursor-pointer">Live Interviews</li>
-            <li className="hover:text-primary cursor-pointer">AI Interview Monitoring</li>
-            <li className="hover:text-primary cursor-pointer">Code Collaboration</li>
-            <li className="hover:text-primary cursor-pointer">Interview Analytics</li>
+            <li onClick={() => (window.location.href = "/sessions")} className="hover:text-primary cursor-pointer">
+              Live Interviews
+            </li>
+            <li onClick={() => alert("Coming Soon")} className="hover:text-primary cursor-pointer">
+              AI Interview Monitoring
+            </li>
+            <li onClick={() => (window.location.href = "/problems")} className="hover:text-primary cursor-pointer">
+              Code Collaboration
+            </li>
+            <li onClick={() => alert("Coming Soon")} className="hover:text-primary cursor-pointer">
+              Interview Analytics
+            </li>
           </ul>
         </div>
 
@@ -45,10 +55,18 @@ export default function footer() {
             Company
           </h3>
           <ul className="space-y-2 text-sm text-base-content/70">
-            <li className="hover:text-primary cursor-pointer">About</li>
-            <li className="hover:text-primary cursor-pointer">Careers</li>
-            <li className="hover:text-primary cursor-pointer">Privacy Policy</li>
-            <li className="hover:text-primary cursor-pointer">Terms of Service</li>
+<li onClick={() => (window.location.href = "/about")} className="hover:text-primary cursor-pointer">
+  About
+</li>
+            <li onClick={() => alert("Careers coming soon")} className="hover:text-primary cursor-pointer">
+              Careers
+            </li>
+            <li onClick={() => alert("Privacy Policy coming soon")} className="hover:text-primary cursor-pointer">
+              Privacy Policy
+            </li>
+            <li onClick={() => alert("Terms coming soon")} className="hover:text-primary cursor-pointer">
+              Terms of Service
+            </li>
           </ul>
         </div>
 
@@ -58,19 +76,27 @@ export default function footer() {
             Contact
           </h3>
 
-          <div className="flex items-center gap-2 text-sm text-base-content/70">
+          <div
+            onClick={() => (window.location.href = "mailto:support@intervue.app")}
+            className="flex items-center gap-2 text-sm text-base-content/70 cursor-pointer hover:text-primary"
+          >
             <Mail className="size-4" />
             <span>support@intervue.app</span>
           </div>
 
           <div className="flex gap-4">
-            <Github className="size-5 cursor-pointer hover:text-primary transition" />
-            <Linkedin className="size-5 cursor-pointer hover:text-primary transition" />
+            <Github
+              onClick={() => window.open("https://github.com", "_blank")}
+              className="size-5 cursor-pointer hover:text-primary transition"
+            />
+            <Linkedin
+              onClick={() => window.open("https://www.linkedin.com/in/raj-posture-3a0621372/", "_blank")}
+              className="size-5 cursor-pointer hover:text-primary transition"
+            />
           </div>
         </div>
       </div>
 
-      {/* Bottom bar */}
       <div
         className="
           border-t border-primary/10

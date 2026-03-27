@@ -1,18 +1,20 @@
 import { useUser } from "@clerk/clerk-react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
+
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
 import ProblemPage from "./pages/ProblemPage";
 import ProblemsPage from "./pages/ProblemsPage";
 import QuizPage from "./pages/QuizPage";
 import SessionPage from "./pages/SessionPage";
+import AboutPage from "./pages/AboutPage";
 
 import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 
 function App() {
   const { isSignedIn, isLoaded } = useUser();
-  const location = useLocation(); 
+  const location = useLocation();
 
   const hideFooterRoutes = [
     "/editor",
@@ -25,7 +27,6 @@ function App() {
     location.pathname.startsWith(route)
   );
 
-  // prevent flicker
   if (!isLoaded) return null;
 
   return (
@@ -60,9 +61,12 @@ function App() {
           path="/session/:id"
           element={isSignedIn ? <SessionPage /> : <Navigate to="/" />}
         />
+
+        {/* ✅ FIXED: About route inside Routes */}
+        <Route path="/about" element={<AboutPage />} />
       </Routes>
 
-      {/* ✅ Footer hidden on problems/editor/session */}
+      {/* Footer */}
       {!shouldHideFooter && <Footer />}
 
       <Toaster toastOptions={{ duration: 3000 }} />
