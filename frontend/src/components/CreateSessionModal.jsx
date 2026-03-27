@@ -19,7 +19,6 @@ function CreateSessionModal({
         <h3 className="font-bold text-2xl mb-6">Create New Session</h3>
 
         <div className="space-y-8">
-          {/* PROBLEM SELECTION */}
           <div className="space-y-2">
             <label className="label">
               <span className="label-text font-semibold">Select Problem</span>
