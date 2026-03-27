@@ -7,7 +7,7 @@ import ProblemsPage from "./pages/ProblemsPage";
 import QuizPage from "./pages/QuizPage";
 import SessionPage from "./pages/SessionPage";
 
-import Footer from "./components/footer";
+import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 
 function App() {
