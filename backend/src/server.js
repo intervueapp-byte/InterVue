@@ -25,11 +25,16 @@ app.use(
   })
 );
 
-// 🔥 2. INNGEST ROUTE FIRST (VERY IMPORTANT)
+// 🔥 2. INNGEST ROUTE (PUBLIC - NO CLERK BLOCK)
 app.use("/api/inngest", serve({ client: inngest, functions }));
 
-// 🔥 3. Clerk AFTER inngest
-app.use(clerkMiddleware());
+// 🔥 3. Clerk middleware with BYPASS for inngest
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/inngest")) {
+    return next(); // ✅ allow Inngest requests
+  }
+  return clerkMiddleware()(req, res, next);
+});
 
 // ✅ 4. Health check
 app.get("/health", (req, res) => {
