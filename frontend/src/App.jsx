@@ -17,7 +17,11 @@ function App() {
   const location = useLocation();
 
   const hideFooterRoutes = [
+<<<<<<< HEAD
     "/",
+=======
+     "/",
+>>>>>>> f14cc84c91dd897eeb7bd40202551b7031dde97e
     "/editor",
     "/session",
     "/problems",
