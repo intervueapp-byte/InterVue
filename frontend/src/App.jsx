@@ -16,17 +16,13 @@ function App() {
   const { isSignedIn, isLoaded } = useUser();
   const location = useLocation();
 
-  const hideFooterRoutes = [
-<<<<<<< HEAD
-    "/",
-=======
-     "/",
->>>>>>> f14cc84c91dd897eeb7bd40202551b7031dde97e
-    "/editor",
-    "/session",
-    "/problems",
-    "/problem"
-  ];
+const hideFooterRoutes = [
+  "/",
+  "/editor",
+  "/session",
+  "/problems",
+  "/problem"
+];
 
   const shouldHideFooter = hideFooterRoutes.some(route =>
     location.pathname.startsWith(route)
