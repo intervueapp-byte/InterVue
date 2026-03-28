@@ -9,15 +9,24 @@ if (!apiKey || !apiSecret) {
   console.error("STREAM_API_KEY or STREAM_API_SECRET is missing");
 }
 
-export const chatClient = StreamChat.getInstance(apiKey, apiSecret); // will be used chat features
-export const streamClient = new StreamClient(apiKey, apiSecret); // will be used for video calls
+export const chatClient = StreamChat.getInstance(apiKey, apiSecret);
+export const streamClient = new StreamClient(apiKey, apiSecret);
 
 export const upsertStreamUser = async (userData) => {
   try {
     await chatClient.upsertUser(userData);
+
+    await streamClient.upsertUsers([
+      {
+        id: userData.id,
+        name: userData.name,
+        image: userData.image || "",
+      },
+    ]);
+
     console.log("Stream user upserted successfully:", userData);
   } catch (error) {
-    console.error("Error upserting Stream user:", error);
+    console.error("Error upserting Stream user:", error.message);
   }
 };
 
@@ -26,6 +35,6 @@ export const deleteStreamUser = async (userId) => {
     await chatClient.deleteUser(userId);
     console.log("Stream user deleted successfully:", userId);
   } catch (error) {
-    console.error("Error deleting the Stream user:", error);
+    console.error("Error deleting the Stream user:", error.message);
   }
 };

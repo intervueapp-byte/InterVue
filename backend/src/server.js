@@ -14,9 +14,20 @@ const app = express();
 
 app.use(express.json());
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://inter-vue-official.vercel.app"
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || ENV.CLIENT_URL,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS blocked"));
+      }
+    },
     credentials: true
   })
 );

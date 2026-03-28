@@ -3,27 +3,33 @@ import { connectDB } from "./db.js";
 import User from "../models/User.js";
 import { deleteStreamUser, upsertStreamUser } from "./stream.js";
 
-export const inngest = new Inngest({ id: "talent-iq" });
+export const inngest = new Inngest({ id: "inter-vue-official" });
 
 const syncUser = inngest.createFunction(
   { id: "sync-user" },
-  { event: "clerk/user.created" },
+  { event: "user.created" },
   async ({ event }) => {
+    console.log("🔥 user.created event received");
+
     await connectDB();
 
     const { id, email_addresses, first_name, last_name, image_url } = event.data;
 
     const newUser = {
       clerkId: id,
-      email: email_addresses[0]?.email_address,
-      name: `${first_name || ""} ${last_name || ""}`,
+      email: email_addresses?.[0]?.email_address,
+      name: `${first_name || ""} ${last_name || ""}`.trim(),
       profileImage: image_url,
     };
 
-    await User.create(newUser);
+    await User.findOneAndUpdate(
+      { clerkId: id },
+      newUser,
+      { upsert: true, new: true }
+    );
 
     await upsertStreamUser({
-      id: newUser.clerkId.toString(),
+      id: id.toString(),
       name: newUser.name,
       image: newUser.profileImage,
     });
@@ -32,11 +38,14 @@ const syncUser = inngest.createFunction(
 
 const deleteUserFromDB = inngest.createFunction(
   { id: "delete-user-from-db" },
-  { event: "clerk/user.deleted" },
+  { event: "user.deleted" },
   async ({ event }) => {
+    console.log("🔥 user.deleted event received");
+
     await connectDB();
 
     const { id } = event.data;
+
     await User.deleteOne({ clerkId: id });
 
     await deleteStreamUser(id.toString());

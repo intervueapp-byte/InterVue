@@ -11,21 +11,25 @@ export async function createSession(req, res) {
       return res.status(400).json({ message: "Problem and difficulty are required" });
     }
 
-    // generate a unique call id for stream video
     const callId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
-    // create session in db
-    const session = await Session.create({ problem, difficulty, host: userId, callId });
+    await streamClient.upsertUsers([
+      {
+        id: clerkId,
+        name: req.user.name || "User",
+        image: req.user.profileImage || "",
+      },
+    ]);
 
-    // create stream video call
-    await streamClient.video.call("default", callId).getOrCreate({
+    const call = streamClient.video.call("default", callId);
+
+    await call.getOrCreate({
       data: {
         created_by_id: clerkId,
-        custom: { problem, difficulty, sessionId: session._id.toString() },
+        custom: { problem, difficulty },
       },
     });
 
-    // chat messaging
     const channel = chatClient.channel("messaging", callId, {
       name: `${problem} Session`,
       created_by_id: clerkId,
@@ -34,10 +38,17 @@ export async function createSession(req, res) {
 
     await channel.create();
 
+    const session = await Session.create({
+      problem,
+      difficulty,
+      host: userId,
+      callId,
+    });
+
     res.status(201).json({ session });
   } catch (error) {
     console.log("Error in createSession controller:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Failed to create room" });
   }
 }
 
@@ -60,7 +71,6 @@ export async function getMyRecentSessions(req, res) {
   try {
     const userId = req.user._id;
 
-    // get sessions where user is either host or participant
     const sessions = await Session.find({
       status: "completed",
       $or: [{ host: userId }, { participant: userId }],
@@ -110,8 +120,17 @@ export async function joinSession(req, res) {
       return res.status(400).json({ message: "Host cannot join their own session as participant" });
     }
 
-    // check if session is already full - has a participant
-    if (session.participant) return res.status(409).json({ message: "Session is full" });
+    if (session.participant) {
+      return res.status(409).json({ message: "Session is full" });
+    }
+
+    await streamClient.upsertUsers([
+      {
+        id: clerkId,
+        name: req.user.name || "User",
+        image: req.user.profileImage || "",
+      },
+    ]);
 
     session.participant = userId;
     await session.save();
@@ -135,28 +154,24 @@ export async function endSession(req, res) {
 
     if (!session) return res.status(404).json({ message: "Session not found" });
 
-    // check if user is the host
     if (session.host.toString() !== userId.toString()) {
       return res.status(403).json({ message: "Only the host can end the session" });
     }
 
-    // check if session is already completed
     if (session.status === "completed") {
       return res.status(400).json({ message: "Session is already completed" });
     }
 
-    // delete stream video call
     const call = streamClient.video.call("default", session.callId);
     await call.delete({ hard: true });
 
-    // delete stream chat channel
     const channel = chatClient.channel("messaging", session.callId);
     await channel.delete();
 
     session.status = "completed";
     await session.save();
 
-    res.status(200).json({ session, message: "Session ended successfully" });
+    res.status(200).json({ session });
   } catch (error) {
     console.log("Error in endSession controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
