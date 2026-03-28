@@ -716,12 +716,8 @@ export default function DashboardPage() {
               onClick={() => setShowCreateModal(true)}
             >
               <Video size={14} /> Interviews
-              
+
             </div>
-<<<<<<< HEAD
-            
-=======
->>>>>>> aba7f47633ad10d9ace4ca40c98847ba3205ce9a
             <div
               className="sb-item"
               style={{ cursor: "pointer" }}
