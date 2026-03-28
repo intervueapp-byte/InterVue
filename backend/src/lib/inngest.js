@@ -10,51 +10,41 @@ const syncUser = inngest.createFunction(
   { event: "clerk/user.created" },
   async ({ event }) => {
     try {
-      console.log("🔥 clerk/user.created event received");
+      console.log("🔥 FUNCTION STARTED");
 
       await connectDB();
+      console.log("🔥 DB CONNECTED");
 
-      const {
-        id,
-        email_addresses,
-        primary_email_address_id,
-        first_name,
-        last_name,
-        image_url,
-      } = event.data;
+      const data = event.data;
+      console.log("🧾 RAW EVENT:", data);
 
-      const primaryEmailObj = email_addresses?.find(
-        (e) => e.id === primary_email_address_id
-      );
+      // ✅ GUARANTEED SAFE EXTRACTION
+      const id = data.id;
+      const email = data.email_addresses?.[0]?.email_address;
 
-      const email =
-        primaryEmailObj?.email_address ||
-        email_addresses?.[0]?.email_address ||
-        `user-${id}@intervue.dev`;
+      if (!id || !email) {
+        console.log("❌ MISSING ID OR EMAIL → EXITING");
+        return;
+      }
 
-      const newUser = {
-        clerkId: id,
-        email,
-        name: `${first_name || ""} ${last_name || ""}`.trim() || "User",
-        profileImage: image_url || "",
-      };
+      console.log("🆔", id);
+      console.log("📧", email);
 
-      const savedUser = await User.findOneAndUpdate(
+      const user = await User.findOneAndUpdate(
         { clerkId: id },
-        newUser,
+        {
+          clerkId: id,
+          email: email,
+          name: `${data.first_name || ""} ${data.last_name || ""}`.trim() || "User",
+          profileImage: data.image_url || "",
+        },
         { upsert: true, new: true }
       );
 
-      console.log("✅ User saved in MongoDB:", savedUser);
+      console.log("✅ SAVED USER:", user);
 
-      await upsertStreamUser({
-        id: id.toString(),
-        name: newUser.name,
-        image: newUser.profileImage,
-      });
-
-    } catch (error) {
-      console.error("❌ syncUser error:", error);
+    } catch (err) {
+      console.error("❌ ERROR:", err);
     }
   }
 );
@@ -80,5 +70,8 @@ const deleteUserFromDB = inngest.createFunction(
     }
   }
 );
+
+await connectDB();
+
 
 export const functions = [syncUser, deleteUserFromDB];

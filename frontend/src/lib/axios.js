@@ -1,8 +1,13 @@
 import axios from "axios";
 
-const instance = axios.create({
-  baseURL: "https://intervue-qfif.onrender.com/api",
-  withCredentials: true,
+const axiosInstance = axios.create({
+  baseURL: "https://intervue-t8xv.onrender.com/api", 
+  withCredentials: true, //// ✅ FORCE FIX
 });
 
-export default instance;
+axiosInstance.interceptors.request.use((config) => {
+  console.log("🚀 FINAL URL:", config.baseURL + config.url);
+  return config;
+});
+
+export default axiosInstance;
