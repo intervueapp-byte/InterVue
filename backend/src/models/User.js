@@ -4,17 +4,15 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
       default: "Anonymous User",
       trim: true,
     },
     email: {
       type: String,
-      required: true,
-      unique: true,
       lowercase: true,
       trim: true,
-      default: "noemail@intervue.app",
+      sparse: true,
+      unique: true,
     },
     profileImage: {
       type: String,

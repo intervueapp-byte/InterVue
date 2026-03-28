@@ -1,11 +1,30 @@
 import { useNavigate } from "react-router";
 import { useUser, UserButton } from "@clerk/clerk-react";
-import { useActiveSessions, useCreateSession, useMyRecentSessions } from "../hooks/useSessions";
+import {
+  useActiveSessions,
+  useCreateSession,
+  useMyRecentSessions,
+} from "../hooks/useSessions";
 import { useEffect, useState } from "react";
 import {
-  Trophy, Plus, Video, Code2, Clock, Users, ChevronRight,
-  Zap, LayoutDashboard, Settings, Sparkles, ArrowUpRight,
-  Calendar, CheckCircle2, Circle, Play, X, Loader2,
+  Trophy,
+  Plus,
+  Video,
+  Code2,
+  Clock,
+  Users,
+  ChevronRight,
+  Zap,
+  LayoutDashboard,
+  Settings,
+  Sparkles,
+  ArrowUpRight,
+  Calendar,
+  CheckCircle2,
+  Circle,
+  Play,
+  X,
+  Loader2,
 } from "lucide-react";
 
 // ── Original sub-components (all buttons preserved) ──────────────────
@@ -16,11 +35,6 @@ import ActiveSessions from "../components/ActiveSessions";
 import RecentSessions from "../components/RecentSessions";
 import CreateSessionModal from "../components/CreateSessionModal";
 
-/* ─────────────────────────────────────────────────────────────────────
-   PREMIUM OVERRIDE CSS
-   Only touches the page shell / layout / background.
-   Does NOT break component internals.
-────────────────────────────────────────────────────────────────────── */
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,700;1,9..144,800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
@@ -464,58 +478,6 @@ const css = `
   @keyframes shimmer { 0%,100%{opacity:0.35}50%{opacity:0.6} }
   .skel { background: var(--card2); border-radius: 5px; animation: shimmer 1.5s ease-in-out infinite; }
 
-  /* ── MODAL ── */
-  .modal-backdrop {
-    position: fixed; inset: 0; z-index: 500;
-    background: rgba(0,0,0,0.72);
-    backdrop-filter: blur(7px);
-    display: flex; align-items: center; justify-content: center;
-    padding: 1.5rem;
-    animation: mfade 0.2s ease;
-  }
-  @keyframes mfade { from{opacity:0}to{opacity:1} }
-
-  .modal-panel {
-    background: var(--card);
-    border: 1px solid var(--border-h);
-    border-radius: 20px;
-    width: 100%; max-width: 460px;
-    overflow: hidden;
-    box-shadow: 0 40px 100px rgba(0,0,0,0.7);
-    animation: mup 0.25s cubic-bezier(0.16,1,0.3,1);
-  }
-  @keyframes mup { from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)} }
-
-  .modal-hd {
-    background: linear-gradient(135deg, #12101E, #1A1630);
-    border-bottom: 1px solid var(--border);
-    padding: 1.6rem 1.6rem 1.35rem;
-    position: relative; overflow: hidden;
-  }
-  .modal-hd::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  }
-  .modal-hd-glow {
-    position: absolute; top: -80px; right: -60px;
-    width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(200,164,90,0.08), transparent 70%);
-    pointer-events: none;
-  }
-  .modal-hd-row { display: flex; align-items: flex-start; justify-content: space-between; }
-  .modal-title { font-family: 'Fraunces', serif; font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em; position: relative; }
-  .modal-subtitle { font-size: 0.78rem; color: var(--text-sub); margin-top: 0.3rem; position: relative; }
-  .modal-close-btn {
-    background: rgba(255,255,255,0.06); border: 1px solid var(--border);
-    color: var(--text-sub); border-radius: 8px; padding: 0.38rem;
-    cursor: pointer; transition: all 0.18s;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .modal-close-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
-
-  .modal-bd { padding: 1.4rem 1.6rem; display: flex; flex-direction: column; gap: 1.15rem; }
-
   .field-lbl { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-sub); margin-bottom: 0.55rem; }
 
   .field-inp {
@@ -597,7 +559,11 @@ function getGreeting() {
 }
 function formatDate(d) {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 function diffClass(d = "") {
   const v = d.toLowerCase();
@@ -606,7 +572,7 @@ function diffClass(d = "") {
   return "dp-hard";
 }
 function statusInfo(s) {
-  if (s.status === "active")    return { label: "Live",      cls: "sc-live" };
+  if (s.status === "active") return { label: "Live", cls: "sc-live" };
   if (s.status === "completed") return { label: "Completed", cls: "sc-done" };
   return { label: "Ended", cls: "sc-ended" };
 }
@@ -616,80 +582,45 @@ function SkelRows({ n = 3 }) {
   return (
     <div className="session-list">
       {[...Array(n)].map((_, i) => (
-        <div key={i} style={{ display:"flex", alignItems:"center", gap:"0.9rem", padding:"1rem", background:"var(--card2)", borderRadius:11, border:"1px solid var(--border)" }}>
-          <div className="skel" style={{ width:8, height:8, borderRadius:"50%", flexShrink:0 }} />
-          <div style={{ flex:1, display:"flex", flexDirection:"column", gap:"0.4rem" }}>
-            <div className="skel" style={{ height:11, width:"58%", borderRadius:4 }} />
-            <div className="skel" style={{ height:9,  width:"32%", borderRadius:4 }} />
-          </div>
-          <div className="skel" style={{ height:27, width:58, borderRadius:7 }} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── modal (self-contained, preserves all original logic) ── */
-function NewRoomModal({ isOpen, onClose, roomConfig, setRoomConfig, onCreateRoom, isCreating }) {
-  if (!isOpen) return null;
-  return (
-    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal-panel">
-        <div className="modal-hd">
-          <div className="modal-hd-glow" />
-          <div className="modal-hd-row">
-            <div>
-              <div className="modal-title">New Interview Room</div>
-              <div className="modal-subtitle">Configure a problem and start a live session</div>
-            </div>
-            <button className="modal-close-btn" onClick={onClose}><X size={14} /></button>
-          </div>
-        </div>
-
-        <div className="modal-bd">
-          <div>
-            <label className="field-lbl">Problem / Topic</label>
-            <input
-              className="field-inp"
-              placeholder="e.g. Two Sum, System Design, Binary Trees…"
-              value={roomConfig.problem}
-              onChange={e => setRoomConfig(p => ({ ...p, problem: e.target.value }))}
+        <div
+          key={i}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.9rem",
+            padding: "1rem",
+            background: "var(--card2)",
+            borderRadius: 11,
+            border: "1px solid var(--border)",
+          }}
+        >
+          <div
+            className="skel"
+            style={{ width: 8, height: 8, borderRadius: "50%", flexShrink: 0 }}
+          />
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.4rem",
+            }}
+          >
+            <div
+              className="skel"
+              style={{ height: 11, width: "58%", borderRadius: 4 }}
+            />
+            <div
+              className="skel"
+              style={{ height: 9, width: "32%", borderRadius: 4 }}
             />
           </div>
-          <div>
-            <label className="field-lbl">Difficulty</label>
-            <div className="diff-grid">
-              {["Easy","Medium","Hard"].map(d => {
-                const v = d.toLowerCase();
-                const sel = roomConfig.difficulty === v;
-                return (
-                  <div
-                    key={d}
-                    className={`diff-opt ${sel ? `sel-${v}` : ""}`}
-                    onClick={() => setRoomConfig(p => ({ ...p, difficulty: v }))}
-                  >
-                    <div className={`diff-dot dd-${v}`} />
-                    {d}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <div
+            className="skel"
+            style={{ height: 27, width: 58, borderRadius: 7 }}
+          />
         </div>
-
-        <div className="modal-ft">
-          <button className="btn-cancel-m" onClick={onClose}>Cancel</button>
-          <button
-            className="btn-submit-m"
-            onClick={onCreateRoom}
-            disabled={!roomConfig.problem || !roomConfig.difficulty || isCreating}
-          >
-            {isCreating
-              ? <><Loader2 size={14} style={{ animation:"spin 1s linear infinite" }} /> Creating…</>
-              : <><Zap size={14} /> Launch Room</>}
-          </button>
-        </div>
-      </div>
+      ))}
     </div>
   );
 }
@@ -706,8 +637,10 @@ export default function DashboardPage() {
   const [now, setNow] = useState(new Date());
 
   const createSessionMutation = useCreateSession();
-  const { data: activeSessionsData, isLoading: loadingActiveSessions } = useActiveSessions();
-  const { data: recentSessionsData, isLoading: loadingRecentSessions } = useMyRecentSessions();
+  const { data: activeSessionsData, isLoading: loadingActiveSessions } =
+    useActiveSessions();
+  const { data: recentSessionsData, isLoading: loadingRecentSessions } =
+    useMyRecentSessions();
 
   const activeSessions = activeSessionsData?.sessions || [];
   const recentSessions = recentSessionsData?.sessions || [];
@@ -723,38 +656,53 @@ export default function DashboardPage() {
   const handleCreateRoom = () => {
     if (!roomConfig.problem || !roomConfig.difficulty) return;
     createSessionMutation.mutate(
-      { problem: roomConfig.problem, difficulty: roomConfig.difficulty.toLowerCase() },
+      {
+        problem: roomConfig.problem,
+        difficulty: roomConfig.difficulty.toLowerCase(),
+      },
       {
         onSuccess: (data) => {
           setShowCreateModal(false);
           navigate(`/session/${data.session._id}`);
         },
-      }
+      },
     );
   };
 
   // ── original helper — unchanged ──
   const isUserInSession = (session) =>
-    user?.id && (session.host?.clerkId === user.id || session.participant?.clerkId === user.id);
+    user?.id &&
+    (session.host?.clerkId === user.id ||
+      session.participant?.clerkId === user.id);
 
   const firstName = user?.firstName || user?.username || "there";
-  const quizPct   = quizScore ? Math.round((quizScore.score / quizScore.total) * 100) : 0;
-  const timeStr   = now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
-  const dateStr   = now.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+  const quizPct = quizScore
+    ? Math.round((quizScore.score / quizScore.total) * 100)
+    : 0;
+  const timeStr = now.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const dateStr = now.toLocaleDateString("en-IN", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
 
   return (
     <>
       <style>{css}</style>
 
       <div className="dash-shell">
-
         {/* ── SIDEBAR ── */}
         <aside className="dash-sidebar">
           <a href="/" className="sb-logo">
             <div className="sb-gem">
               <Sparkles size={15} color="#07070C" strokeWidth={2.5} />
             </div>
-            <span className="sb-brand">Inter<span>Vue</span></span>
+            <span className="sb-brand">
+              Inter<span>Vue</span>
+            </span>
           </a>
 
           <nav className="sb-nav">
@@ -762,19 +710,28 @@ export default function DashboardPage() {
             <div className="sb-item sb-active">
               <LayoutDashboard size={14} /> Dashboard
             </div>
-            <div className="sb-item" style={{ cursor:"pointer" }} onClick={() => setShowCreateModal(true)}>
+            <div
+              className="sb-item"
+              style={{ cursor: "pointer" }}
+              onClick={() => setShowCreateModal(true)}
+            >
               <Video size={14} /> Interviews
+              
             </div>
-            <div className="sb-item" style={{ cursor:"pointer" }}>
+            
+            <div
+              className="sb-item"
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/problems")}
+            >
               <Code2 size={14} /> Practice
             </div>
-            <div className="sb-item" style={{ cursor:"pointer" }}>
+            <div
+              className="sb-item"
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/quiz")}
+            >
               <Trophy size={14} /> Quizzes
-            </div>
-
-            <span className="sb-section-label" style={{ marginTop:"0.75rem" }}>Account</span>
-            <div className="sb-item" style={{ cursor:"pointer" }}>
-              <Settings size={14} /> Settings
             </div>
           </nav>
 
@@ -782,7 +739,9 @@ export default function DashboardPage() {
             <div className="sb-user">
               <UserButton afterSignOutUrl="/" />
               <div className="sb-user-info">
-                <div className="sb-user-name">{user?.fullName || firstName}</div>
+                <div className="sb-user-name">
+                  {user?.fullName || firstName}
+                </div>
                 <div className="sb-user-plan">Free plan</div>
               </div>
             </div>
@@ -791,15 +750,19 @@ export default function DashboardPage() {
 
         {/* ── MAIN ── */}
         <main className="dash-main">
-
           {/* Topbar */}
           <div className="dash-topbar">
-            <span className="topbar-breadcrumb">InterVue / <strong>Dashboard</strong></span>
+            <span className="topbar-breadcrumb">
+              InterVue / <strong>Dashboard</strong>
+            </span>
             <div className="topbar-right">
               <div className="topbar-time">
                 <Clock size={11} /> {timeStr} · {dateStr}
               </div>
-              <button className="topbar-new-btn" onClick={() => setShowCreateModal(true)}>
+              <button
+                className="topbar-new-btn"
+                onClick={() => setShowCreateModal(true)}
+              >
                 <Plus size={13} /> New Room
               </button>
             </div>
@@ -807,7 +770,6 @@ export default function DashboardPage() {
 
           {/* Content */}
           <div className="dash-content">
-
             {/* Welcome */}
             <div className="dash-welcome au au1">
               <div className="welcome-heading">
@@ -824,81 +786,145 @@ export default function DashboardPage() {
             <div className="stats-row au au2">
               <div className="stat-card">
                 <div className="stat-card-glow glow-gold" />
-                <div className="stat-icon si-gold"><Video size={15} color="var(--gold)" /></div>
+                <div className="stat-icon si-gold">
+                  <Video size={15} color="var(--gold)" />
+                </div>
                 <div className="stat-value">{activeSessions.length}</div>
                 <div className="stat-label">Active Sessions</div>
-                <div className={`stat-delta ${activeSessions.length > 0 ? "delta-up" : "delta-flat"}`}>
-                  {activeSessions.length > 0 ? <><Zap size={8} /> Live now</> : "None running"}
+                <div
+                  className={`stat-delta ${activeSessions.length > 0 ? "delta-up" : "delta-flat"}`}
+                >
+                  {activeSessions.length > 0 ? (
+                    <>
+                      <Zap size={8} /> Live now
+                    </>
+                  ) : (
+                    "None running"
+                  )}
                 </div>
               </div>
 
               <div className="stat-card">
                 <div className="stat-card-glow glow-green" />
-                <div className="stat-icon si-green"><CheckCircle2 size={15} color="var(--green)" /></div>
+                <div className="stat-icon si-green">
+                  <CheckCircle2 size={15} color="var(--green)" />
+                </div>
                 <div className="stat-value">{recentSessions.length}</div>
                 <div className="stat-label">Total Sessions</div>
-                <div className="stat-delta delta-up"><ArrowUpRight size={8} /> All time</div>
+                <div className="stat-delta delta-up">
+                  <ArrowUpRight size={8} /> All time
+                </div>
               </div>
 
               <div className="stat-card">
                 <div className="stat-card-glow glow-blue" />
-                <div className="stat-icon si-blue"><Trophy size={15} color="var(--accent)" /></div>
-                <div className="stat-value">{quizScore ? `${quizScore.score}/${quizScore.total}` : "—"}</div>
+                <div className="stat-icon si-blue">
+                  <Trophy size={15} color="var(--accent)" />
+                </div>
+                <div className="stat-value">
+                  {quizScore ? `${quizScore.score}/${quizScore.total}` : "—"}
+                </div>
                 <div className="stat-label">Latest Quiz</div>
-                {quizScore && <div className="stat-delta delta-up"><Zap size={8} /> {quizPct}% correct</div>}
+                {quizScore && (
+                  <div className="stat-delta delta-up">
+                    <Zap size={8} /> {quizPct}% correct
+                  </div>
+                )}
               </div>
 
               <div className="stat-card">
                 <div className="stat-card-glow glow-amber" />
-                <div className="stat-icon si-amber"><Users size={15} color="var(--amber)" /></div>
-                <div className="stat-value">{recentSessions.filter(s => s.participant).length}</div>
+                <div className="stat-icon si-amber">
+                  <Users size={15} color="var(--amber)" />
+                </div>
+                <div className="stat-value">
+                  {recentSessions.filter((s) => s.participant).length}
+                </div>
                 <div className="stat-label">Candidates Seen</div>
-                <div className="stat-delta delta-flat"><Calendar size={8} /> All time</div>
+                <div className="stat-delta delta-flat">
+                  <Calendar size={8} /> All time
+                </div>
               </div>
             </div>
 
             {/* Main grid */}
             <div className="dash-grid au au3">
-
               {/* Active rooms */}
               <div className="d-card">
                 <div className="d-card-header">
                   <div className="d-card-title">
                     <Video size={14} color="var(--gold)" />
                     Active Rooms
-                    {activeSessions.length > 0 && <span className="d-card-badge">{activeSessions.length}</span>}
+                    {activeSessions.length > 0 && (
+                      <span className="d-card-badge">
+                        {activeSessions.length}
+                      </span>
+                    )}
                   </div>
-                  <button className="d-card-action" onClick={() => setShowCreateModal(true)}>
+                  <button
+                    className="d-card-action"
+                    onClick={() => setShowCreateModal(true)}
+                  >
                     <Plus size={11} /> New room
                   </button>
                 </div>
 
-                {loadingActiveSessions ? <SkelRows /> : activeSessions.length === 0 ? (
+                {loadingActiveSessions ? (
+                  <SkelRows />
+                ) : activeSessions.length === 0 ? (
                   <div className="empty-box">
-                    <div className="empty-icon-wrap"><Video size={19} color="var(--text-dim)" /></div>
+                    <div className="empty-icon-wrap">
+                      <Video size={19} color="var(--text-dim)" />
+                    </div>
                     <div className="empty-title">No active rooms</div>
-                    <div className="empty-sub">Create a room to start a live interview session.</div>
-                    <button className="empty-create-btn" onClick={() => setShowCreateModal(true)}>
+                    <div className="empty-sub">
+                      Create a room to start a live interview session.
+                    </div>
+                    <button
+                      className="empty-create-btn"
+                      onClick={() => setShowCreateModal(true)}
+                    >
                       <Plus size={12} /> Create room
                     </button>
                   </div>
                 ) : (
                   <div className="session-list">
-                    {activeSessions.map(s => {
+                    {activeSessions.map((s) => {
                       const mine = isUserInSession(s);
                       return (
-                        <div key={s._id} className="session-row" onClick={() => navigate(`/session/${s._id}`)}>
-                          <span className={`s-live-dot ${s.participant ? "s-live" : "s-wait"}`} />
+                        <div
+                          key={s._id}
+                          className="session-row"
+                          onClick={() => navigate(`/session/${s._id}`)}
+                        >
+                          <span
+                            className={`s-live-dot ${s.participant ? "s-live" : "s-wait"}`}
+                          />
                           <div className="s-info">
-                            <div className="s-problem">{s.problem || "Untitled problem"}</div>
+                            <div className="s-problem">
+                              {s.problem || "Untitled problem"}
+                            </div>
                             <div className="s-meta">
-                              <span className={`diff-pill ${diffClass(s.difficulty)}`}>{s.difficulty || "N/A"}</span>
+                              <span
+                                className={`diff-pill ${diffClass(s.difficulty)}`}
+                              >
+                                {s.difficulty || "N/A"}
+                              </span>
                               <span>·</span>
-                              <span>{s.participant ? "In progress" : "Waiting for candidate"}</span>
+                              <span>
+                                {s.participant
+                                  ? "In progress"
+                                  : "Waiting for candidate"}
+                              </span>
                             </div>
                           </div>
-                          <button className={`s-join-btn ${mine ? "s-join-mine" : "s-join-default"}`}
-                            onClick={e => { e.stopPropagation(); navigate(`/session/${s._id}`); }}>
+                          <button
+                            className={`s-join-btn ${mine ? "s-join-mine" : "s-join-default"}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/session/${s._id}`);
+                            }}
+                          >
                             <Play size={9} /> {mine ? "Rejoin" : "Join"}
                           </button>
                         </div>
@@ -910,18 +936,26 @@ export default function DashboardPage() {
 
               {/* Right column */}
               <div className="right-col">
-
                 {/* Quiz card */}
                 {quizScore && (
                   <div className="quiz-card">
-                    <div className="d-card-header" style={{ borderBottom:"1px solid rgba(200,164,90,0.12)" }}>
-                      <div className="d-card-title"><Trophy size={14} color="var(--gold)" /> Latest Quiz</div>
+                    <div
+                      className="d-card-header"
+                      style={{
+                        borderBottom: "1px solid rgba(200,164,90,0.12)",
+                      }}
+                    >
+                      <div className="d-card-title">
+                        <Trophy size={14} color="var(--gold)" /> Latest Quiz
+                      </div>
                     </div>
                     <div className="quiz-body">
                       <div className="quiz-ring" style={{ "--p": quizPct }}>
                         <span className="quiz-pct">{quizPct}%</span>
                       </div>
-                      <div className="quiz-score-txt">{quizScore.score} / {quizScore.total} correct</div>
+                      <div className="quiz-score-txt">
+                        {quizScore.score} / {quizScore.total} correct
+                      </div>
                       <div className="quiz-date-txt">{quizScore.date}</div>
                     </div>
                   </div>
@@ -930,13 +964,33 @@ export default function DashboardPage() {
                 {/* Quick actions */}
                 <div className="d-card">
                   <div className="d-card-header">
-                    <div className="d-card-title"><Zap size={14} color="var(--gold)" /> Quick Actions</div>
+                    <div className="d-card-title">
+                      <Zap size={14} color="var(--gold)" /> Quick Actions
+                    </div>
                   </div>
                   <div className="qa-list">
                     {[
-                      { icon:<Plus size={14} color="var(--gold)"/>,   cls:"si-gold",  title:"New Interview Room", sub:"Start a live session",  action:() => setShowCreateModal(true) },
-                      { icon:<Code2 size={14} color="var(--accent)"/>, cls:"si-blue", title:"Practice Problems",   sub:"Solve on your own",     action:() => {} },
-                      { icon:<Trophy size={14} color="var(--amber)"/>, cls:"si-amber",title:"Take a Quiz",         sub:"Test your knowledge",   action:() => {} },
+                      {
+                        icon: <Plus size={14} color="var(--gold)" />,
+                        cls: "si-gold",
+                        title: "New Interview Room",
+                        sub: "Start a live session",
+                        action: () => setShowCreateModal(true),
+                      },
+                      {
+                        icon: <Code2 size={14} color="var(--accent)" />,
+                        cls: "si-blue",
+                        title: "Practice Problems",
+                        sub: "Solve on your own",
+                        action: () => navigate("/problems"),
+                      },
+                      {
+                        icon: <Trophy size={14} color="var(--amber)" />,
+                        cls: "si-amber",
+                        title: "Take a Quiz",
+                        sub: "Test your knowledge",
+                        action: () => navigate("/quiz"),
+                      },
                     ].map(({ icon, cls, title, sub, action }) => (
                       <div key={title} className="qa-row" onClick={action}>
                         <div className={`qa-icon-wrap ${cls}`}>{icon}</div>
@@ -958,29 +1012,65 @@ export default function DashboardPage() {
                 <div className="d-card-title">
                   <Clock size={14} color="var(--gold)" />
                   Recent Sessions
-                  {recentSessions.length > 0 && <span className="d-card-badge">{recentSessions.length}</span>}
+                  {recentSessions.length > 0 && (
+                    <span className="d-card-badge">
+                      {recentSessions.length}
+                    </span>
+                  )}
                 </div>
                 {recentSessions.length > 5 && (
-                  <button className="d-card-action">View all <ChevronRight size={11} /></button>
+                  <button className="d-card-action">
+                    View all <ChevronRight size={11} />
+                  </button>
                 )}
               </div>
 
               {loadingRecentSessions ? (
-                <div style={{ padding:"0.75rem 1rem" }}>
+                <div style={{ padding: "0.75rem 1rem" }}>
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} style={{ display:"flex", gap:"1rem", padding:"0.8rem 0.4rem", borderBottom:"1px solid var(--border)", alignItems:"center" }}>
-                      <div className="skel" style={{ height:11, width:"26%", borderRadius:4 }} />
-                      <div className="skel" style={{ height:11, width:"10%", borderRadius:4 }} />
-                      <div className="skel" style={{ height:11, width:"13%", borderRadius:4, marginLeft:"auto" }} />
-                      <div className="skel" style={{ height:21, width:66, borderRadius:100 }} />
+                    <div
+                      key={i}
+                      style={{
+                        display: "flex",
+                        gap: "1rem",
+                        padding: "0.8rem 0.4rem",
+                        borderBottom: "1px solid var(--border)",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div
+                        className="skel"
+                        style={{ height: 11, width: "26%", borderRadius: 4 }}
+                      />
+                      <div
+                        className="skel"
+                        style={{ height: 11, width: "10%", borderRadius: 4 }}
+                      />
+                      <div
+                        className="skel"
+                        style={{
+                          height: 11,
+                          width: "13%",
+                          borderRadius: 4,
+                          marginLeft: "auto",
+                        }}
+                      />
+                      <div
+                        className="skel"
+                        style={{ height: 21, width: 66, borderRadius: 100 }}
+                      />
                     </div>
                   ))}
                 </div>
               ) : recentSessions.length === 0 ? (
                 <div className="empty-box">
-                  <div className="empty-icon-wrap"><Clock size={19} color="var(--text-dim)" /></div>
+                  <div className="empty-icon-wrap">
+                    <Clock size={19} color="var(--text-dim)" />
+                  </div>
                   <div className="empty-title">No sessions yet</div>
-                  <div className="empty-sub">Past interview sessions will show up here.</div>
+                  <div className="empty-sub">
+                    Past interview sessions will show up here.
+                  </div>
                 </div>
               ) : (
                 <div className="table-scroll">
@@ -995,15 +1085,37 @@ export default function DashboardPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {recentSessions.slice(0, 8).map(s => {
+                      {recentSessions.slice(0, 8).map((s) => {
                         const { label, cls } = statusInfo(s);
                         const isHost = s.host?.clerkId === user?.id;
                         return (
-                          <tr key={s._id} onClick={() => navigate(`/session/${s._id}`)}>
-                            <td><div className="td-prob"><Code2 size={12} color="var(--text-sub)" />{s.problem || "Untitled"}</div></td>
-                            <td><span className={`diff-pill ${diffClass(s.difficulty)}`}>{s.difficulty || "—"}</span></td>
-                            <td><span className="td-secondary">{isHost ? "Interviewer" : "Candidate"}</span></td>
-                            <td><span className="td-secondary">{formatDate(s.createdAt)}</span></td>
+                          <tr
+                            key={s._id}
+                            onClick={() => navigate(`/session/${s._id}`)}
+                          >
+                            <td>
+                              <div className="td-prob">
+                                <Code2 size={12} color="var(--text-sub)" />
+                                {s.problem || "Untitled"}
+                              </div>
+                            </td>
+                            <td>
+                              <span
+                                className={`diff-pill ${diffClass(s.difficulty)}`}
+                              >
+                                {s.difficulty || "—"}
+                              </span>
+                            </td>
+                            <td>
+                              <span className="td-secondary">
+                                {isHost ? "Interviewer" : "Candidate"}
+                              </span>
+                            </td>
+                            <td>
+                              <span className="td-secondary">
+                                {formatDate(s.createdAt)}
+                              </span>
+                            </td>
                             <td>
                               <span className={`status-chip ${cls}`}>
                                 <Circle size={5} fill="currentColor" /> {label}
@@ -1017,13 +1129,11 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
-
           </div>
         </main>
       </div>
 
-      {/* Modal — self-contained, all original logic preserved */}
-      <NewRoomModal
+      <CreateSessionModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         roomConfig={roomConfig}

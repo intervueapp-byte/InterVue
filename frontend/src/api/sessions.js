@@ -1,38 +1,64 @@
 import axiosInstance from "../lib/axios";
 
+// 🔥 helper logger (VERY IMPORTANT for debugging)
+const handleRequest = async (promise, label) => {
+  try {
+    const res = await promise;
+    console.log(`✅ ${label}:`, res.data);
+    return res.data;
+  } catch (err) {
+    console.error(`❌ ${label} ERROR:`, err?.response?.data || err.message);
+    throw err;
+  }
+};
+
 export const sessionApi = {
-  createSession: async (data) => {
-    const res = await axiosInstance.post("/sessions", data);
-    return res.data;
-  },
+  // ✅ CREATE SESSION
+  createSession: async (data) =>
+    handleRequest(
+      axiosInstance.post("/sessions", data),
+      "Create Session"
+    ),
 
-  getActiveSessions: async () => {
-    const res = await axiosInstance.get("/sessions/active");
-    return res.data;
-  },
+  // ✅ GET ACTIVE SESSIONS
+  getActiveSessions: async () =>
+    handleRequest(
+      axiosInstance.get("/sessions/active"),
+      "Active Sessions"
+    ),
 
-  getMyRecentSessions: async () => {
-    const res = await axiosInstance.get("/sessions/my-recent");
-    return res.data;
-  },
+  // ✅ GET RECENT SESSIONS
+  getMyRecentSessions: async () =>
+    handleRequest(
+      axiosInstance.get("/sessions/my-recent"),
+      "Recent Sessions"
+    ),
 
-  getSessionById: async (id) => {
-    const res = await axiosInstance.get(`/sessions/${id}`);
-    return res.data;
-  },
+  // ✅ GET SESSION BY ID
+  getSessionById: async (id) =>
+    handleRequest(
+      axiosInstance.get(`/sessions/${id}`),
+      "Get Session By ID"
+    ),
 
-  joinSession: async (id) => {
-    const res = await axiosInstance.post(`/sessions/${id}/join`);
-    return res.data;
-  },
+  // ✅ JOIN SESSION
+  joinSession: async (id) =>
+    handleRequest(
+      axiosInstance.post(`/sessions/${id}/join`),
+      "Join Session"
+    ),
 
-  endSession: async (id) => {
-    const res = await axiosInstance.post(`/sessions/${id}/end`);
-    return res.data;
-  },
+  // ✅ END SESSION
+  endSession: async (id) =>
+    handleRequest(
+      axiosInstance.post(`/sessions/${id}/end`),
+      "End Session"
+    ),
 
-  getStreamToken: async () => {
-    const res = await axiosInstance.get("/chat/token");
-    return res.data;
-  },
+  // ✅ STREAM TOKEN
+  getStreamToken: async () =>
+    handleRequest(
+      axiosInstance.get("/chat/token"),
+      "Stream Token"
+    ),
 };
