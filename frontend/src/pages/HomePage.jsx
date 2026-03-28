@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import {
   ArrowRightIcon,
   CheckIcon,
@@ -502,20 +502,27 @@ export default function HomePage() {
     <>
       <style>{css}</style>
       <div style={{ background: "var(--ink)", minHeight: "100vh" }}>
-
         {/* NAV */}
         <nav className="nav">
           <Link to="/" className="logo-wrap">
             <div className="logo-gem">
               <SparklesIcon size={18} color="#07070C" strokeWidth={2.5} />
             </div>
-            <span className="logo-name">Inter<span>Vue</span></span>
+            <span className="logo-name">
+              Inter<span>Vue</span>
+            </span>
           </Link>
 
           <div className="nav-links">
-            <a href="#features" className="nav-link">Features</a>
-            <a href="#process" className="nav-link">How it works</a>
-            <a href="#reviews" className="nav-link">Reviews</a>
+            <a href="#features" className="nav-link">
+              Features
+            </a>
+            <a href="#process" className="nav-link">
+              How it works
+            </a>
+            <a href="#reviews" className="nav-link">
+              Reviews
+            </a>
           </div>
 
           <SignInButton mode="modal">
@@ -539,15 +546,18 @@ export default function HomePage() {
               </div>
 
               <h1 className="hero-h1 a d2">
-                Interview<br />
-                <em>smarter.</em><br />
+                Interview
+                <br />
+                <em>smarter.</em>
+                <br />
                 <span className="dim">Hire better.</span>
               </h1>
 
               <p className="hero-body a d3">
-                InterVue is a live technical interview platform where candidates and
-                interviewers share a real-time code editor, HD video, and instant execution
-                — everything needed to assess real engineering skill.
+                InterVue is a live technical interview platform where candidates
+                and interviewers share a real-time code editor, HD video, and
+                instant execution — everything needed to assess real engineering
+                skill.
               </p>
 
               <div className="cta-row a d4">
@@ -586,20 +596,54 @@ export default function HomePage() {
 
               <div className="mock-window">
                 <div className="mock-titlebar">
-                  <div className="td td-r"/><div className="td td-y"/><div className="td td-g"/>
+                  <div className="td td-r" />
+                  <div className="td td-y" />
+                  <div className="td td-g" />
                   <span className="mock-tab">solution.js</span>
                 </div>
                 <div className="mock-split">
                   <div className="mock-code">
-                    <div><span className="cmt">// Two Sum · O(n) solution</span></div>
-                    <div><span className="kw">function</span> <span className="fn">twoSum</span><span className="op">(</span>nums, target<span className="op">) {"{"}</span></div>
-                    <div>&nbsp;&nbsp;<span className="kw">const</span> map <span className="op">=</span> <span className="kw">new</span> <span className="fn">Map</span>();</div>
-                    <div>&nbsp;&nbsp;<span className="kw">for</span> (<span className="kw">let</span> i <span className="op">=</span> <span className="num">0</span>; i <span className="op">&lt;</span> nums.length; i++) {"{"}</div>
-                    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span className="kw">const</span> diff <span className="op">=</span> target <span className="op">-</span> nums[i];</div>
-                    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span className="kw">if</span> (map.<span className="fn">has</span>(diff)) {"{"}</div>
-                    <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="kw">return</span> [map.<span className="fn">get</span>(diff), i];</div>
+                    <div>
+                      <span className="cmt">// Two Sum · O(n) solution</span>
+                    </div>
+                    <div>
+                      <span className="kw">function</span>{" "}
+                      <span className="fn">twoSum</span>
+                      <span className="op">(</span>nums, target
+                      <span className="op">) {"{"}</span>
+                    </div>
+                    <div>
+                      &nbsp;&nbsp;<span className="kw">const</span> map{" "}
+                      <span className="op">=</span>{" "}
+                      <span className="kw">new</span>{" "}
+                      <span className="fn">Map</span>();
+                    </div>
+                    <div>
+                      &nbsp;&nbsp;<span className="kw">for</span> (
+                      <span className="kw">let</span> i{" "}
+                      <span className="op">=</span>{" "}
+                      <span className="num">0</span>; i{" "}
+                      <span className="op">&lt;</span> nums.length; i++) {"{"}
+                    </div>
+                    <div>
+                      &nbsp;&nbsp;&nbsp;&nbsp;<span className="kw">const</span>{" "}
+                      diff <span className="op">=</span> target{" "}
+                      <span className="op">-</span> nums[i];
+                    </div>
+                    <div>
+                      &nbsp;&nbsp;&nbsp;&nbsp;<span className="kw">if</span>{" "}
+                      (map.<span className="fn">has</span>(diff)) {"{"}
+                    </div>
+                    <div>
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      <span className="kw">return</span> [map.
+                      <span className="fn">get</span>(diff), i];
+                    </div>
                     <div>&nbsp;&nbsp;&nbsp;&nbsp;{"}"}</div>
-                    <div>&nbsp;&nbsp;&nbsp;&nbsp;map.<span className="fn">set</span>(nums[i], i);</div>
+                    <div>
+                      &nbsp;&nbsp;&nbsp;&nbsp;map.
+                      <span className="fn">set</span>(nums[i], i);
+                    </div>
                     <div>&nbsp;&nbsp;{"}"}</div>
                     <div>{"}"}</div>
                   </div>
@@ -609,14 +653,21 @@ export default function HomePage() {
                       <span className="cam-name">Aryan K.</span>
                     </div>
                     <div className="cam-tile">
-                      <div className="cam-avatar" style={{ borderColor: "var(--accent)" }}>SR</div>
+                      <div
+                        className="cam-avatar"
+                        style={{ borderColor: "var(--accent)" }}
+                      >
+                        SR
+                      </div>
                       <span className="cam-name">Interviewer</span>
                     </div>
                   </div>
                 </div>
                 <div className="mock-statusbar">
-                  <span className="status-dot"/>
-                  <span className="status-text">All tests passing · JS · 64ms · Memory: 42.1 MB</span>
+                  <span className="status-dot" />
+                  <span className="status-text">
+                    All tests passing · JS · 64ms · Memory: 42.1 MB
+                  </span>
                 </div>
               </div>
 
@@ -637,8 +688,21 @@ export default function HomePage() {
           <div className="marquee-inner">
             <span className="marquee-label">Used by engineers at</span>
             <div className="marquee-track">
-              {["Google","Microsoft","Amazon","Meta","Stripe","Atlassian","Uber","Airbnb","Razorpay","PhonePe"].map(c => (
-                <span key={c} className="marquee-co">{c}</span>
+              {[
+                "Google",
+                "Microsoft",
+                "Amazon",
+                "Meta",
+                "Stripe",
+                "Atlassian",
+                "Uber",
+                "Airbnb",
+                "Razorpay",
+                "PhonePe",
+              ].map((c) => (
+                <span key={c} className="marquee-co">
+                  {c}
+                </span>
               ))}
             </div>
           </div>
@@ -647,20 +711,49 @@ export default function HomePage() {
         {/* FEATURES */}
         <div id="features" className="section">
           <span className="s-eyebrow">Platform</span>
-          <h2 className="s-title">Built for how real<br />interviews happen</h2>
+          <h2 className="s-title">
+            Built for how real
+            <br />
+            interviews happen
+          </h2>
           <p className="s-sub">
-            No fluff, no friction. Every feature exists to make the interview itself
-            clearer, faster, and more revealing of true engineering ability.
+            No fluff, no friction. Every feature exists to make the interview
+            itself clearer, faster, and more revealing of true engineering
+            ability.
           </p>
 
           <div className="feat-grid">
             {[
-              { icon: <VideoIcon size={22} color="var(--gold)" />, h: "HD Video & Audio", p: "Adaptive streaming with noise cancellation keeps the conversation natural, even on unstable connections." },
-              { icon: <Code2Icon size={22} color="var(--gold)" />, h: "Collaborative Editor", p: "Monaco-powered, real-time synced editor with syntax highlighting across 40+ languages and a shared terminal." },
-              { icon: <ZapIcon size={22} color="var(--gold)" />, h: "Instant Code Execution", p: "Sandboxed runner returns stdout, stderr, and test results in milliseconds — zero configuration needed." },
-              { icon: <UsersIcon size={22} color="var(--gold)" />, h: "Interviewer Dashboard", p: "Build question banks, rate candidates live, add private notes, and export full session summaries." },
-              { icon: <BarChart3Icon size={22} color="var(--gold)" />, h: "Performance Analytics", p: "Keystroke replay, complexity heatmaps, and AI-assisted scoring give you objective, defensible assessments." },
-              { icon: <ClockIcon size={22} color="var(--gold)" />, h: "Session Recordings", p: "Every session is recorded automatically. Share with your team, review edge cases, or audit fairness." },
+              {
+                icon: <VideoIcon size={22} color="var(--gold)" />,
+                h: "HD Video & Audio",
+                p: "Adaptive streaming with noise cancellation keeps the conversation natural, even on unstable connections.",
+              },
+              {
+                icon: <Code2Icon size={22} color="var(--gold)" />,
+                h: "Collaborative Editor",
+                p: "Monaco-powered, real-time synced editor with syntax highlighting across 40+ languages and a shared terminal.",
+              },
+              {
+                icon: <ZapIcon size={22} color="var(--gold)" />,
+                h: "Instant Code Execution",
+                p: "Sandboxed runner returns stdout, stderr, and test results in milliseconds — zero configuration needed.",
+              },
+              {
+                icon: <UsersIcon size={22} color="var(--gold)" />,
+                h: "Interviewer Dashboard",
+                p: "Build question banks, rate candidates live, add private notes, and export full session summaries.",
+              },
+              {
+                icon: <BarChart3Icon size={22} color="var(--gold)" />,
+                h: "Performance Analytics",
+                p: "Keystroke replay, complexity heatmaps, and AI-assisted scoring give you objective, defensible assessments.",
+              },
+              {
+                icon: <ClockIcon size={22} color="var(--gold)" />,
+                h: "Session Recordings",
+                p: "Every session is recorded automatically. Share with your team, review edge cases, or audit fairness.",
+              },
             ].map(({ icon, h, p }) => (
               <div key={h} className="feat-cell">
                 <div className="feat-icon">{icon}</div>
@@ -674,14 +767,29 @@ export default function HomePage() {
         {/* HOW IT WORKS */}
         <div id="process" className="section" style={{ paddingTop: 0 }}>
           <span className="s-eyebrow">Process</span>
-          <h2 className="s-title">Three steps to a<br />great interview</h2>
+          <h2 className="s-title">
+            Three steps to a<br />
+            great interview
+          </h2>
           <p className="s-sub">From invite to decision in under an hour.</p>
 
           <div className="steps">
             {[
-              { n: "01", h: "Create a Room", p: "One click generates a secure, expiring room link. Your candidate joins with no account, no download, no friction." },
-              { n: "02", h: "Code Together", p: "Editor, video, and sandbox launch instantly for both participants. Focus entirely on the problem — not the tooling." },
-              { n: "03", h: "Review & Decide", p: "Post-session playback, scoring rubrics, and team notes make hiring decisions fast, fair, and documented." },
+              {
+                n: "01",
+                h: "Create a Room",
+                p: "One click generates a secure, expiring room link. Your candidate joins with no account, no download, no friction.",
+              },
+              {
+                n: "02",
+                h: "Code Together",
+                p: "Editor, video, and sandbox launch instantly for both participants. Focus entirely on the problem — not the tooling.",
+              },
+              {
+                n: "03",
+                h: "Review & Decide",
+                p: "Post-session playback, scoring rubrics, and team notes make hiring decisions fast, fair, and documented.",
+              },
             ].map(({ n, h, p }) => (
               <div key={n} className="step">
                 <div className="step-n">{n}</div>
@@ -695,17 +803,61 @@ export default function HomePage() {
         {/* TESTIMONIALS */}
         <div id="reviews" className="section" style={{ paddingTop: 0 }}>
           <span className="s-eyebrow">Reviews</span>
-          <h2 className="s-title">Engineers and hiring teams<br />love InterVue</h2>
+          <h2 className="s-title">
+            Engineers and hiring teams
+            <br />
+            love InterVue
+          </h2>
 
           <div className="testi-grid">
             {[
-              { q: <>"The editor is <b>buttery smooth</b>. I've used CoderPad and HackerRank — InterVue is a level above in terms of feel and reliability."</>, name: "Priya Sharma", role: "SWE · ex-Flipkart", init: "PS" },
-              { q: <>"We cut screening time by <b>40%</b>. The question bank and session replay changed how our entire hiring pipeline works."</>, name: "James O'Brien", role: "Eng Manager · Fintech", init: "JO" },
-              { q: <>"As a candidate I <b>actually enjoyed</b> the session. Clean, zero lag. Got the offer right after my InterVue interview."</>, name: "Arjun Menon", role: "Full-stack Engineer", init: "AM" },
+              {
+                q: (
+                  <>
+                    "The editor is <b>buttery smooth</b>. I've used CoderPad and
+                    HackerRank — InterVue is a level above in terms of feel and
+                    reliability."
+                  </>
+                ),
+                name: "Priya Sharma",
+                role: "SWE · ex-Flipkart",
+                init: "PS",
+              },
+              {
+                q: (
+                  <>
+                    "We cut screening time by <b>40%</b>. The question bank and
+                    session replay changed how our entire hiring pipeline
+                    works."
+                  </>
+                ),
+                name: "James O'Brien",
+                role: "Eng Manager · Fintech",
+                init: "JO",
+              },
+              {
+                q: (
+                  <>
+                    "As a candidate I <b>actually enjoyed</b> the session.
+                    Clean, zero lag. Got the offer right after my InterVue
+                    interview."
+                  </>
+                ),
+                name: "Arjun Menon",
+                role: "Full-stack Engineer",
+                init: "AM",
+              },
             ].map(({ q, name, role, init }) => (
               <div key={name} className="testi">
                 <div className="stars">
-                  {[...Array(5)].map((_,i) => <StarIcon key={i} size={13} fill="var(--gold)" color="var(--gold)" />)}
+                  {[...Array(5)].map((_, i) => (
+                    <StarIcon
+                      key={i}
+                      size={13}
+                      fill="var(--gold)"
+                      color="var(--gold)"
+                    />
+                  ))}
                 </div>
                 <p className="quote">{q}</p>
                 <div className="testi-person">
@@ -724,9 +876,14 @@ export default function HomePage() {
         <div className="cta-wrap">
           <div className="cta-box">
             <div className="cta-glow" />
-            <h2 className="cta-h">Start your first<br /><em>interview today.</em></h2>
+            <h2 className="cta-h">
+              Start your first
+              <br />
+              <em>interview today.</em>
+            </h2>
             <p className="cta-p">
-              Join thousands of engineers and hiring teams on InterVue.<br />
+              Join thousands of engineers and hiring teams on InterVue.
+              <br />
               Free to start — no credit card required.
             </p>
             <div className="cta-btns">
@@ -742,19 +899,25 @@ export default function HomePage() {
 
         {/* FOOTER */}
         <footer>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <div className="logo-gem" style={{ width: 28, height: 28, borderRadius: 8 }}>
+          <div
+            style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}
+          >
+            <div
+              className="logo-gem"
+              style={{ width: 28, height: 28, borderRadius: 8 }}
+            >
               <SparklesIcon size={13} color="#07070C" strokeWidth={2.5} />
             </div>
-            <span className="foot-copy">© 2025 InterVue · Final Year Project</span>
+            <span className="foot-copy">
+              © 2025 InterVue · Final Year Project
+            </span>
           </div>
           <div className="foot-links">
-            <a href="#" className="foot-link">Privacy</a>
-            <a href="#" className="foot-link">Terms</a>
-            <a href="#" className="foot-link">Contact</a>
-          </div>
+  <Link to="/privacy" className="foot-link">Privacy</Link>
+  <Link to="/terms" className="foot-link">Terms</Link>
+  <Link to="/contact" className="foot-link">Contact</Link>
+</div>
         </footer>
-
       </div>
     </>
   );

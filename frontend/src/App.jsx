@@ -11,7 +11,9 @@ import AboutPage from "./pages/AboutPage";
 
 import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
-
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
+import ContactPage from "./pages/ContactPage";
 function App() {
   const { isSignedIn, isLoaded } = useUser();
   const location = useLocation();
@@ -63,8 +65,10 @@ const hideFooterRoutes = [
           element={isSignedIn ? <SessionPage /> : <Navigate to="/" />}
         />
 
-        {/* ✅ FIXED: About route inside Routes */}
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+<Route path="/terms" element={<TermsPage />} />
+<Route path="/contact" element={<ContactPage />} />
       </Routes>
 
       {/* Footer */}
