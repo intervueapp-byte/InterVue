@@ -18,17 +18,14 @@ const syncUser = inngest.createFunction(
       const data = event.data;
       console.log("🧾 RAW EVENT:", data);
 
-      // ✅ GUARANTEED SAFE EXTRACTION
       const id = data.id;
       const email = data.email_addresses?.[0]?.email_address;
+
 
       if (!id || !email) {
         console.log("❌ MISSING ID OR EMAIL → EXITING");
         return;
       }
-
-      console.log("🆔", id);
-      console.log("📧", email);
 
       const user = await User.findOneAndUpdate(
         { clerkId: id },
@@ -42,6 +39,20 @@ const syncUser = inngest.createFunction(
       );
 
       console.log("✅ SAVED USER:", user);
+
+            console.log("📤 Sending to Stream:", {
+  id,
+  name: user.name,
+  image: user.profileImage,
+});
+      // 🔥 Stream user creation
+      await upsertStreamUser({
+        id: id,
+        name: user.name,
+        image: user.profileImage,
+      });
+
+      console.log("🚀 STREAM USER CREATED");
 
     } catch (err) {
       console.error("❌ ERROR:", err);
@@ -70,8 +81,6 @@ const deleteUserFromDB = inngest.createFunction(
     }
   }
 );
-
-await connectDB();
 
 
 export const functions = [syncUser, deleteUserFromDB];
