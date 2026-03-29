@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/clerk-react";
-import { Navigate, Route, Routes, useLocation } from "react-router";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";

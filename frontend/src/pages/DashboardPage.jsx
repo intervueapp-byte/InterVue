@@ -27,7 +27,6 @@ import {
   X,
   Loader2,
 } from "lucide-react";
-
 // ── Original sub-components (all buttons preserved) ──────────────────
 import Navbar from "../components/Navbar";
 import WelcomeSection from "../components/WelcomeSection";
@@ -675,15 +674,24 @@ useEffect(() => {
 }, [isSignedIn]);
 
   // ── original handler — unchanged ──
-  const handleCreateRoom = () => {
-    if (!roomConfig.problem || !roomConfig.difficulty) return;
-    console.log("ROOM CONFIG:", roomConfig);
-   createSessionMutation.mutate({
-    problem: roomConfig.problem,
-    difficulty: roomConfig.difficulty.toLowerCase(),
-  });
-  };
+const handleCreateRoom = () => {
+  if (!roomConfig.problem || !roomConfig.difficulty) return;
 
+  console.log("ROOM CONFIG:", roomConfig);
+
+  createSessionMutation.mutate(
+    {
+      problem: roomConfig.problem,
+      difficulty: roomConfig.difficulty.toLowerCase(),
+    },
+    {
+      onSuccess: (data) => {
+        console.log("SESSION CREATED:", data);
+        navigate(`/session/${data._id}`);
+      },
+    }
+  );
+};
   // ── original helper — unchanged ──
   const isUserInSession = (session) =>
     user?.id &&

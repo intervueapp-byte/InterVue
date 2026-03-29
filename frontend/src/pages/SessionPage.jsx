@@ -27,7 +27,7 @@ function SessionPage() {
   const joinSessionMutation = useJoinSession();
   const endSessionMutation = useEndSession();
 
-  const session = sessionData?.session;
+const session = sessionData;
   const isHost = session?.host?.clerkId === user?.id;
   const isParticipant = session?.participant?.clerkId === user?.id;
 
@@ -51,7 +51,7 @@ function SessionPage() {
     if (!session || !user || loadingSession) return;
     if (isHost || isParticipant) return;
 
-    joinSessionMutation.mutate(id, { onSuccess: refetch });
+    joinSessionMutation.mutate(id);
 
     // remove the joinSessionMutation, refetch from dependencies to avoid infinite loop
   }, [session, user, loadingSession, isHost, isParticipant, id]);
