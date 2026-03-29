@@ -1,504 +1,1036 @@
-import { useEffect, useState } from "react";
+/* ══════════════════════════════════════════════════════════════════
+   ProblemPage.jsx  —  Full Redesign for InterVue
+   Design: Editorial dark workspace — Linear / Vercel aesthetic
+   Fonts: Fraunces (brand) + Plus Jakarta Sans (UI) + JetBrains Mono (code/data)
+══════════════════════════════════════════════════════════════════ */
+
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router";
-import { PROBLEMS } from "../data/problems";
-
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import ProblemDescription from "../components/ProblemDescription";
-import OutputPanel from "../components/OutputPanel";
-import CodeEditorPanel from "../components/CodeEditorPanel";
-import { executeCode } from "../lib/piston";
-
-import toast from "react-hot-toast";
-import confetti from "canvas-confetti";
-
-import {
-  SparklesIcon, ChevronLeftIcon, PlayIcon, ChevronRightIcon,
-  Code2Icon, LayoutPanelLeftIcon, TerminalIcon, ZapIcon,
-  CircleCheckBigIcon, ClockIcon, BarChart3Icon,
-} from "lucide-react";
 import { Link } from "react-router";
 import { UserButton } from "@clerk/clerk-react";
 
-/* ─── CSS ──────────────────────────────────────────────────────────── */
+import { PROBLEMS } from "../data/problems";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import ProblemDescription from "../components/ProblemDescription";
+import OutputPanel        from "../components/OutputPanel";
+import CodeEditorPanel    from "../components/CodeEditorPanel";
+import { executeCode }    from "../lib/piston";
+import { LANGUAGE_CONFIG } from "../data/problems";
+import toast    from "react-hot-toast";
+import confetti from "canvas-confetti";
+
+import {
+  SparklesIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon,
+  PlayIcon, Loader2Icon, CheckCheck, XCircleIcon, ZapIcon,
+  Code2Icon, TerminalIcon, BookOpenIcon, TimerIcon,
+  BarChart3Icon, CircleCheckBigIcon, PauseIcon,
+} from "lucide-react";
+
+/* ══════════════════════════════════════════════════════════════════
+   GLOBAL CSS
+══════════════════════════════════════════════════════════════════ */
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;1,9..144,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
   :root {
-    --ink:       #07070C;
-    --surface:   #0C0C15;
-    --card:      #0F0F1A;
-    --card2:     #131320;
-    --border:    rgba(255,255,255,0.07);
-    --border-h:  rgba(255,255,255,0.13);
-    --gold:      #C8A45A;
-    --gold-lt:   #E2C07A;
-    --gold-dk:   #7A5F28;
-    --gold-dim:  rgba(200,164,90,0.1);
-    --text:      #ECEDF4;
-    --text-sub:  #6B7280;
-    --text-dim:  #3D4451;
-    --accent:    #5B8FF9;
-    --green:     #3ECF8E;
-    --green-dim: rgba(62,207,142,0.12);
-    --red:       #F87171;
-    --red-dim:   rgba(248,113,113,0.12);
-    --amber:     #FBBF24;
+    --ink:          #07070C;
+    --surface:      #0B0B14;
+    --card:         #0E0E1A;
+    --card2:        #111120;
+    --border:       rgba(255,255,255,0.06);
+    --border-h:     rgba(255,255,255,0.1);
+    --border-gold:  rgba(200,164,90,0.2);
+
+    --gold:         #C8A45A;
+    --gold-lt:      #DDB96E;
+    --gold-dk:      #7A5F28;
+    --gold-dim:     rgba(200,164,90,0.08);
+    --gold-glow:    rgba(200,164,90,0.22);
+
+    --text:         #ECEDF4;
+    --text-sub:     rgba(236,237,244,0.45);
+    --text-dim:     rgba(236,237,244,0.18);
+
+    --green:        #3ECF8E;
+    --green-dim:    rgba(62,207,142,0.08);
+    --green-border: rgba(62,207,142,0.18);
+
+    --red:          #F87171;
+    --red-dim:      rgba(248,113,113,0.08);
+    --red-border:   rgba(248,113,113,0.18);
+
+    --amber:        #FBBF24;
+    --amber-dim:    rgba(251,191,36,0.08);
+    --amber-border: rgba(251,191,36,0.18);
+
+    --accent:       #5B8FF9;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body, #root { height: 100%; }
+  html, body, #root { height: 100%; overflow: hidden; }
 
   body {
     background: var(--ink);
     color: var(--text);
     font-family: 'Plus Jakarta Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
-    overflow: hidden;
+    font-size: 14px;
   }
 
-  /* Grain */
+  /* Subtle noise grain */
   body::after {
     content: '';
-    position: fixed; inset: 0;
+    position: fixed; inset: 0; pointer-events: none; z-index: 9999;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-    opacity: 0.025; pointer-events: none; z-index: 9999;
+    opacity: 0.018;
   }
 
-  /* ── TOPBAR ── */
-  .pb-topbar {
+  /* ═══════════════════════════════
+     ROOT + AMBIENT
+  ═══════════════════════════════ */
+  .pp-root {
+    display: flex; flex-direction: column;
+    height: 100vh; background: var(--ink);
+    overflow: hidden; position: relative;
+  }
+
+  /* Radial glow — top center */
+  .pp-root::before {
+    content: '';
+    position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+    width: 900px; height: 600px;
+    background: radial-gradient(ellipse at 50% 0%,
+      rgba(200,164,90,0.04) 0%,
+      transparent 60%
+    );
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ═══════════════════════════════
+     TOPBAR
+  ═══════════════════════════════ */
+  .pp-topbar {
+    position: relative; z-index: 200; flex-shrink: 0;
     height: 52px;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 1rem;
-    background: rgba(7,7,12,0.85);
-    backdrop-filter: blur(20px);
+    display: flex; align-items: center;
+    padding: 0 1rem; gap: 0;
+    background: rgba(7,7,12,0.92);
+    backdrop-filter: blur(32px) saturate(160%);
     border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    gap: 1rem;
-    position: relative;
-    z-index: 100;
   }
 
-  /* Gold line on top */
-  .pb-topbar::before {
+  /* Gold shimmer at very top */
+  .pp-topbar::before {
     content: '';
     position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent 0%, var(--gold-dk) 30%, var(--gold) 50%, var(--gold-dk) 70%, transparent 100%);
-    opacity: 0.6;
+    background: linear-gradient(90deg,
+      transparent 0%, rgba(200,164,90,0) 15%,
+      rgba(200,164,90,0.5) 42%, var(--gold) 50%,
+      rgba(200,164,90,0.5) 58%, rgba(200,164,90,0) 85%, transparent 100%
+    );
   }
 
-  .pb-logo {
-    display: flex; align-items: center; gap: 0.6rem;
+  /* Topbar sections */
+  .tb-left   { display: flex; align-items: center; gap: 0.7rem; flex-shrink: 0; }
+  .tb-center { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0 1rem; min-width: 0; }
+  .tb-right  { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+
+  .tb-sep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
+
+  /* Logo */
+  .pp-logo {
+    display: flex; align-items: center; gap: 0.5rem;
     text-decoration: none; flex-shrink: 0;
   }
-  .pb-logo-gem {
+  .pp-gem {
     width: 28px; height: 28px; border-radius: 8px;
     background: linear-gradient(145deg, var(--gold-lt), var(--gold-dk));
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 14px rgba(200,164,90,0.3);
-  }
-  .pb-logo-name {
-    font-family: 'Fraunces', serif; font-weight: 700; font-size: 1rem;
-    letter-spacing: -0.01em; color: var(--text);
-  }
-  .pb-logo-name span { color: var(--gold); }
-
-  /* Center — problem selector */
-  .pb-center {
-    display: flex; align-items: center; gap: 0.5rem;
-    flex: 1; justify-content: center; max-width: 520px; margin: 0 auto;
-  }
-
-  .pb-nav-btn {
-    display: flex; align-items: center; justify-content: center;
-    width: 28px; height: 28px; border-radius: 7px;
-    background: var(--card2); border: 1px solid var(--border);
-    color: var(--text-sub); cursor: pointer; transition: all 0.18s;
+    box-shadow: 0 0 14px rgba(200,164,90,0.28), inset 0 1px 0 rgba(255,255,255,0.12);
     flex-shrink: 0;
   }
-  .pb-nav-btn:hover { border-color: var(--border-h); color: var(--text); background: var(--card); }
+  .pp-brand {
+    font-family: 'Fraunces', serif;
+    font-weight: 700; font-size: 1rem;
+    color: var(--text); line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .pp-brand em { font-style: normal; color: var(--gold); }
 
-  .pb-problem-select {
-    background: var(--card2); border: 1px solid var(--border);
-    border-radius: 9px; color: var(--text);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.8rem; font-weight: 600;
-    padding: 0.3rem 0.85rem;
-    outline: none; cursor: pointer; transition: border-color 0.2s;
-    max-width: 260px;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.6rem center;
-    padding-right: 2rem;
-  }
-  .pb-problem-select:focus { border-color: rgba(200,164,90,0.35); }
-  .pb-problem-select option { background: var(--card2); color: var(--text); }
-
-  /* Difficulty pill */
-  .diff-pill {
-    display: inline-flex; align-items: center;
-    padding: 0.18rem 0.6rem; border-radius: 100px;
-    font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
-    flex-shrink: 0;
-  }
-  .dp-easy   { background: var(--green-dim); color: var(--green); }
-  .dp-medium { background: rgba(251,191,36,0.1); color: var(--amber); }
-  .dp-hard   { background: var(--red-dim);   color: var(--red); }
-
-  /* Right — run button + status */
-  .pb-right {
-    display: flex; align-items: center; gap: 0.65rem; flex-shrink: 0;
-  }
-
-  .pb-run-btn {
-    display: inline-flex; align-items: center; gap: 0.45rem;
-    padding: 0.45rem 1.15rem;
-    background: linear-gradient(135deg, var(--gold-lt), var(--gold));
-    color: #07070C;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-weight: 800; font-size: 0.78rem; letter-spacing: 0.02em;
-    border: none; border-radius: 8px; cursor: pointer;
-    box-shadow: 0 2px 14px rgba(200,164,90,0.28);
-    transition: all 0.2s;
-  }
-  .pb-run-btn:hover:not(:disabled) {
-    transform: translateY(-1px); box-shadow: 0 5px 22px rgba(200,164,90,0.42);
-  }
-  .pb-run-btn:disabled {
-    opacity: 0.65; cursor: not-allowed; transform: none;
-  }
-
-  .pb-status-chip {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    padding: 0.35rem 0.75rem; border-radius: 7px;
+  /* Back button */
+  .pp-back {
+    display: inline-flex; align-items: center; gap: 0.28rem;
+    padding: 0.25rem 0.6rem; border-radius: 6px;
     font-size: 0.72rem; font-weight: 600;
+    color: var(--text-sub); text-decoration: none;
+    border: 1px solid transparent;
+    transition: all 0.16s;
+  }
+  .pp-back:hover {
+    color: var(--text); border-color: var(--border);
+    background: var(--card2);
+  }
+
+  /* Problem picker */
+  .pp-picker { position: relative; flex-shrink: 0; }
+  .pp-picker-btn {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    padding: 0.28rem 0.72rem; max-width: 240px;
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 8px; cursor: pointer;
+    font-size: 0.78rem; font-weight: 600; color: var(--text);
+    transition: all 0.16s;
+  }
+  .pp-picker-btn:hover { border-color: var(--border-h); background: var(--card); }
+  .pp-picker-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Arrow nav */
+  .pp-arrow {
+    width: 26px; height: 26px; border-radius: 6px;
     background: var(--card2); border: 1px solid var(--border);
     color: var(--text-sub);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.16s; flex-shrink: 0;
   }
-  .pb-status-chip.running { color: var(--gold); border-color: rgba(200,164,90,0.25); background: var(--gold-dim); }
-  .pb-status-chip.passed  { color: var(--green); border-color: rgba(62,207,142,0.2); background: var(--green-dim); }
-  .pb-status-chip.failed  { color: var(--red); border-color: rgba(248,113,113,0.2); background: var(--red-dim); }
+  .pp-arrow:hover:not(:disabled) { border-color: var(--border-h); color: var(--text); }
+  .pp-arrow:disabled { opacity: 0.25; cursor: not-allowed; }
 
-  /* Spinning ring */
-  .spin-ring {
-    width: 13px; height: 13px; border-radius: 50%;
-    border: 2px solid rgba(200,164,90,0.25);
-    border-top-color: var(--gold);
-    animation: pbspin 0.75s linear infinite;
-    flex-shrink: 0;
+  /* Dropdown */
+  .pp-dropdown {
+    position: absolute; top: calc(100% + 6px);
+    left: 50%; transform: translateX(-50%);
+    width: 280px; z-index: 400;
+    background: #0E0E1A;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.02);
+    overflow: hidden;
+    animation: ddIn 0.14s cubic-bezier(0.16,1,0.3,1);
   }
-  @keyframes pbspin { to { transform: rotate(360deg); } }
+  @keyframes ddIn {
+    from { opacity:0; transform:translateX(-50%) translateY(-6px) scale(0.98); }
+    to   { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+  }
+  .pp-dd-inner { max-height: 280px; overflow-y: auto; }
+  .pp-dd-inner::-webkit-scrollbar { width: 3px; }
+  .pp-dd-inner::-webkit-scrollbar-thumb { background: var(--border-h); border-radius: 2px; }
 
-  /* ── PANEL SHELL ── */
-  .pb-root {
-    display: flex; flex-direction: column;
-    height: 100vh; background: var(--ink);
+  .pp-dd-row {
+    display: flex; align-items: center; gap: 0.55rem;
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background 0.1s;
+    font-size: 0.78rem;
   }
+  .pp-dd-row:last-child { border-bottom: none; }
+  .pp-dd-row:hover { background: rgba(255,255,255,0.02); }
+  .pp-dd-row.on { background: var(--gold-dim); }
+  .pp-dd-idx {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem; color: var(--text-dim); width: 18px; flex-shrink: 0;
+  }
+  .pp-dd-name { flex: 1; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pp-dd-row.on .pp-dd-name { color: var(--gold-lt); }
 
-  .pb-panels {
-    flex: 1; overflow: hidden;
-    min-height: 0;
+  /* Difficulty chips (shared) */
+  .dc {
+    display: inline-flex; align-items: center;
+    padding: 0.1rem 0.48rem; border-radius: 100px;
+    font-size: 0.58rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    border: 1px solid; flex-shrink: 0;
   }
+  .dc-easy   { background: var(--green-dim); color: var(--green);  border-color: var(--green-border); }
+  .dc-medium { background: var(--amber-dim); color: var(--amber);  border-color: var(--amber-border); }
+  .dc-hard   { background: var(--red-dim);   color: var(--red);    border-color: var(--red-border); }
 
-  /* Resize handles */
-  [data-panel-resize-handle-id] {
-    background: var(--border) !important;
-    position: relative;
-    transition: background 0.2s;
+  /* Timer */
+  .pp-timer {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.24rem 0.65rem; border-radius: 6px;
+    background: var(--card2); border: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; font-weight: 500; color: var(--text-sub);
+    cursor: pointer; transition: all 0.18s; letter-spacing: 0.06em;
+    user-select: none;
   }
-  [data-panel-resize-handle-id]:hover,
-  [data-panel-resize-handle-id][data-resize-handle-active] {
-    background: rgba(200,164,90,0.2) !important;
+  .pp-timer:hover { border-color: var(--border-h); color: var(--text); }
+  .pp-timer.ticking { color: var(--gold-lt); background: var(--gold-dim); border-color: var(--border-gold); }
+
+  .t-pip { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .t-pip.go   { background: var(--green); box-shadow: 0 0 5px var(--green); animation: tpip 1.8s ease-in-out infinite; }
+  .t-pip.stop { background: var(--amber); }
+  @keyframes tpip { 0%,100%{opacity:1}50%{opacity:0.2} }
+
+  /* Status badge */
+  .pp-status {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.24rem 0.68rem; border-radius: 6px;
+    font-size: 0.7rem; font-weight: 700;
+    border: 1px solid; transition: all 0.2s;
+    white-space: nowrap;
   }
-  [data-panel-resize-handle-id]::after {
+  .ps-idle    { background: var(--card2);    border-color: var(--border);        color: var(--text-sub); }
+  .ps-running { background: var(--gold-dim); border-color: var(--border-gold);   color: var(--gold-lt); }
+  .ps-passed  { background: var(--green-dim); border-color: var(--green-border); color: var(--green); }
+  .ps-failed  { background: var(--red-dim);   border-color: var(--red-border);   color: var(--red); }
+
+  /* Run button */
+  .pp-run {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.42rem 1.1rem;
+    background: linear-gradient(135deg, var(--gold-lt) 0%, var(--gold) 100%);
+    color: #07070C; border: none; border-radius: 8px; cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800; font-size: 0.76rem; letter-spacing: 0.02em;
+    box-shadow: 0 2px 16px rgba(200,164,90,0.25), inset 0 1px 0 rgba(255,255,255,0.18);
+    transition: all 0.18s; position: relative; overflow: hidden;
+    white-space: nowrap;
+  }
+  .pp-run::after {
     content: '';
     position: absolute; inset: 0;
-    background: linear-gradient(to right, transparent, rgba(200,164,90,0.12), transparent);
-    opacity: 0; transition: opacity 0.2s;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent 55%);
+    opacity: 0; transition: opacity 0.18s;
   }
-  [data-panel-resize-handle-id]:hover::after { opacity: 1; }
+  .pp-run:hover:not(:disabled)::after { opacity: 1; }
+  .pp-run:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(200,164,90,0.4), inset 0 1px 0 rgba(255,255,255,0.22);
+  }
+  .pp-run:active:not(:disabled) { transform: none; }
+  .pp-run:disabled { opacity: 0.45; cursor: not-allowed; }
 
-  /* Horizontal divider (col) */
-  .pb-divider-col {
-    width: 5px !important;
-    cursor: col-resize;
-    background: var(--border) !important;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .pb-divider-col::before {
-    content: '';
-    display: block; width: 2px; height: 32px; border-radius: 2px;
-    background: rgba(200,164,90,0.2);
-    transition: background 0.2s;
-  }
-  .pb-divider-col:hover::before { background: rgba(200,164,90,0.5); }
+  .spin { animation: rot 0.7s linear infinite; }
+  @keyframes rot { to { transform: rotate(360deg); } }
 
-  /* Vertical divider (row) */
-  .pb-divider-row {
-    height: 5px !important;
-    cursor: row-resize;
-    background: var(--border) !important;
-    display: flex; align-items: center; justify-content: center;
+  /* ═══════════════════════════════
+     BODY + PANEL LAYOUT
+  ═══════════════════════════════ */
+  .pp-body {
+    flex: 1; min-height: 0;
+    position: relative; z-index: 1;
+    padding: 0.7rem 0.8rem;
+    display: flex; gap: 0.5rem;
   }
-  .pb-divider-row::before {
-    content: '';
-    display: block; height: 2px; width: 32px; border-radius: 2px;
-    background: rgba(200,164,90,0.2);
-    transition: background 0.2s;
-  }
-  .pb-divider-row:hover::before { background: rgba(200,164,90,0.5); }
 
-  /* ── PANEL LABELS (mini header bars) ── */
-  .panel-wrap {
+  /* ═══════════════════════════════
+     GLASS CARD — shared panel shell
+  ═══════════════════════════════ */
+  .gc {
+    background: rgba(11,11,20,0.75);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
     display: flex; flex-direction: column;
-    height: 100%; background: var(--ink); overflow: hidden;
+    height: 100%;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.035),
+      0 12px 40px rgba(0,0,0,0.45);
+    transition: border-color 0.22s;
+    position: relative;
   }
-  .panel-labelbar {
-    display: flex; align-items: center; gap: 0.55rem;
-    padding: 0 1rem;
-    height: 36px; flex-shrink: 0;
-    background: var(--surface);
+  .gc:hover { border-color: rgba(255,255,255,0.09); }
+
+  /* Inset top shimmer */
+  .gc::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.04) 50%, transparent 90%);
+    pointer-events: none; z-index: 1;
+  }
+
+  /* Card header */
+  .gc-head {
+    display: flex; align-items: center;
+    height: 40px; flex-shrink: 0;
+    background: rgba(7,7,12,0.7);
     border-bottom: 1px solid var(--border);
-    font-size: 0.72rem; font-weight: 600;
-    color: var(--text-sub); letter-spacing: 0.04em; text-transform: uppercase;
-  }
-  .panel-labelbar svg { color: var(--gold); flex-shrink: 0; }
-  .panel-content {
-    flex: 1; overflow: hidden; min-height: 0;
   }
 
-  /* Inner scrollable area override for sub-components */
-  .panel-content > * {
-    height: 100% !important;
-    background: var(--ink) !important;
+  /* Tab style */
+  .gc-tab {
+    display: inline-flex; align-items: center; gap: 0.38rem;
+    padding: 0 0.9rem; height: 100%;
+    font-size: 0.66rem; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--text-sub); cursor: pointer;
+    border-right: 1px solid var(--border);
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: all 0.14s;
+  }
+  .gc-tab:hover { color: var(--text); background: rgba(255,255,255,0.015); }
+  .gc-tab.on {
+    color: var(--gold-lt);
+    background: rgba(200,164,90,0.035);
+    border-bottom-color: var(--gold);
   }
 
-  /* ── LANGUAGE BADGE in topbar ── */
+  /* Active label (non-clickable) */
+  .gc-label {
+    display: inline-flex; align-items: center; gap: 0.38rem;
+    padding: 0 0.9rem; height: 100%;
+    font-size: 0.66rem; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--gold-lt);
+    border-right: 1px solid var(--border);
+    border-bottom: 2px solid var(--gold); margin-bottom: -1px;
+    background: rgba(200,164,90,0.035);
+  }
+
+  .gc-head-r {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0 0.85rem;
+  }
+
+  .gc-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; color: var(--text-dim);
+  }
+
+  /* Language selector */
+  .gc-lang-sel {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  color: rgba(236,237,244,0.75);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.18rem 1.4rem 0.18rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gc-lang-sel:hover {
+  border-color: rgba(255,255,255,0.14);
+}
+
+.gc-lang-sel:focus {
+  border-color: rgba(200,164,90,0.4);
+  color: var(--text);
+}
+  .gc-lang-sel:focus { border-color: var(--border-gold); color: var(--text); }
+  .gc-lang-sel option { background: #111120; }
+
+  /* Lang pip */
   .lang-badge {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    padding: 0.28rem 0.7rem; border-radius: 7px;
+    display: inline-flex; align-items: center; gap: 0.32rem;
+    font-size: 0.65rem; font-weight: 600; color: var(--text-sub);
     background: var(--card2); border: 1px solid var(--border);
-    font-size: 0.7rem; font-weight: 600; color: var(--text-sub);
-    letter-spacing: 0.04em;
+    border-radius: 5px; padding: 0.14rem 0.5rem;
   }
-  .lang-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--gold); box-shadow: 0 0 6px rgba(200,164,90,0.5);
+  .l-pip { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* Keyboard hint */
+  .kbhint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem; color: var(--text-dim);
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 0.06rem 0.28rem;
   }
 
-  /* ── BACK LINK ── */
-  .pb-back {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    font-size: 0.75rem; font-weight: 600; color: var(--text-sub);
-    text-decoration: none; transition: color 0.18s;
-    padding: 0.3rem 0.55rem; border-radius: 7px;
-    border: 1px solid transparent;
+  /* Panel body */
+  .gc-body {
+    flex: 1; min-height: 0; overflow: hidden;
   }
-  .pb-back:hover { color: var(--text); border-color: var(--border); background: var(--card2); }
 
-  /* ── RESPONSIVE ── */
-  @media (max-width: 768px) {
-    .pb-center { display: none; }
-    .pb-status-chip { display: none; }
+  /* ═══════════════════════════════
+     OUTPUT STRIPE
+  ═══════════════════════════════ */
+  .out-stripe {
+    display: flex; align-items: center; gap: 0.5rem;
+    height: 36px; flex-shrink: 0;
+    padding: 0 0.9rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(7,7,12,0.65);
+    font-size: 0.71rem; font-weight: 600;
+    transition: background 0.25s, border-color 0.25s;
   }
+  .out-stripe.s-pass {
+    background: linear-gradient(90deg, rgba(62,207,142,0.06), rgba(7,7,12,0.65) 65%);
+    border-bottom-color: rgba(62,207,142,0.12);
+  }
+  .out-stripe.s-fail {
+    background: linear-gradient(90deg, rgba(248,113,113,0.06), rgba(7,7,12,0.65) 65%);
+    border-bottom-color: rgba(248,113,113,0.12);
+  }
+  .out-stripe.s-run {
+    background: linear-gradient(90deg, rgba(200,164,90,0.05), rgba(7,7,12,0.65) 65%);
+    border-bottom-color: rgba(200,164,90,0.1);
+  }
+
+  .out-icon {
+    width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .oi-idle { background: var(--card2); border: 1px solid var(--border); }
+  .oi-run  { background: var(--gold-dim); border: 1px solid var(--border-gold); }
+  .oi-pass { background: var(--green-dim); border: 1px solid var(--green-border); }
+  .oi-fail { background: var(--red-dim); border: 1px solid var(--red-border); }
+
+  .out-ms {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem; color: var(--text-dim);
+  }
+
+  /* ═══════════════════════════════
+     RESIZE HANDLES
+  ═══════════════════════════════ */
+  .rh-v {
+    width: 7px !important; cursor: col-resize;
+    background: transparent !important;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .rh-v::after {
+    content: '';
+    display: block; width: 2px; height: 36px; border-radius: 2px;
+    background: var(--border);
+    transition: all 0.18s;
+  }
+  .rh-v:hover::after, .rh-v[data-resize-handle-active]::after {
+    background: var(--gold); height: 52px;
+    box-shadow: 0 0 8px var(--gold-glow);
+  }
+
+  .rh-h {
+    height: 7px !important; cursor: row-resize;
+    background: transparent !important;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .rh-h::after {
+    content: '';
+    display: block; height: 2px; width: 36px; border-radius: 2px;
+    background: var(--border);
+    transition: all 0.18s;
+  }
+  .rh-h:hover::after, .rh-h[data-resize-handle-active]::after {
+    background: var(--gold); width: 52px;
+    box-shadow: 0 0 8px var(--gold-glow);
+  }
+
+  /* ═══════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════ */
+  @media (max-width: 860px) {
+    .tb-center { display: none; }
+    .pp-timer  { display: none; }
+  }
+  @media (max-width: 640px) {
+    .pp-status { display: none; }
+  }
+
+  /* ═══════════════════════════════════════════════════
+   REFINEMENT PASS — noise reduction + hierarchy
+═══════════════════════════════════════════════════ */
+
+/* 1. Kill the grain texture entirely */
+body::after { display: none; }
+
+/* 2. Remove the ambient radial glow — too much atmosphere */
+.pp-root::before { display: none; }
+
+/* 3. Topbar — flatten it, one clean line */
+.pp-topbar {
+  background: #08080F;
+  backdrop-filter: none;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  height: 48px;
+}
+
+/* Gold shimmer at top — pull it way back */
+.pp-topbar::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(200,164,90,0.18) 45%,
+    rgba(200,164,90,0.18) 55%,
+    transparent 100%
+  );
+  opacity: 0.6;
+}
+
+/* Logo gem — no glow, just the gradient */
+.pp-gem {
+  box-shadow: none;
+  border-radius: 7px;
+}
+
+/* 4. Glass cards — quieter, less layered */
+.gc {
+  background: #0C0C18;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.gc:hover { border-color: rgba(255,255,255,0.1); }
+
+/* Remove inset shimmer line — one less layer */
+.gc::before { display: none; }
+
+/* 5. Card headers — simpler, darker */
+.gc-head {
+  background: rgba(6,6,14,0.9);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  height: 38px;
+}
+
+/* Active tab — subtler gold underline */
+.gc-tab.on {
+  color: rgba(200,164,90,0.9);
+  background: transparent;
+  border-bottom-color: rgba(200,164,90,0.55);
+}
+.gc-label {
+  color: rgba(200,164,90,0.85);
+  background: transparent;
+  border-bottom-color: rgba(200,164,90,0.45);
+}
+
+/* 6. Timer — remove ticking background flash */
+.pp-timer.ticking {
+  color: rgba(200,164,90,0.8);
+  background: transparent;
+  border-color: rgba(200,164,90,0.22);
+}
+
+/* Pulsing pip — much calmer */
+.t-pip.go {
+  box-shadow: none;
+  animation: tpip 3s ease-in-out infinite;
+}
+@keyframes tpip { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+/* 7. Run button — less glow */
+.pp-run {
+  box-shadow: none;
+  border-radius: 7px;
+}
+.pp-run:hover:not(:disabled) {
+  transform: none;
+  box-shadow: none;
+  opacity: 0.92;
+}
+.pp-run::after { display: none; }
+
+/* 8. Status badge — flatten */
+.ps-idle    { background: transparent; border-color: rgba(255,255,255,0.08); }
+.ps-running { background: transparent; border-color: rgba(200,164,90,0.2); }
+.ps-passed  { background: transparent; border-color: rgba(62,207,142,0.2); }
+.ps-failed  { background: transparent; border-color: rgba(248,113,113,0.2); }
+
+/* 9. Output panel — visually secondary */
+/* Smaller, quieter header */
+.out-stripe {
+  height: 32px;
+  font-size: 0.68rem;
+  background: #08080F;
+  border-bottom-color: rgba(255,255,255,0.05);
+}
+/* Remove colored gradient washes */
+.out-stripe.s-pass,
+.out-stripe.s-fail,
+.out-stripe.s-run { background: #08080F; }
+/* Keep only the border color as the signal */
+.out-stripe.s-pass { border-bottom-color: rgba(62,207,142,0.2); }
+.out-stripe.s-fail { border-bottom-color: rgba(248,113,113,0.2); }
+.out-stripe.s-run  { border-bottom-color: rgba(200,164,90,0.18); }
+
+/* Output icon — smaller, no border drama */
+.out-icon {
+  width: 20px; height: 20px; border-radius: 5px;
+  background: transparent; border: none;
+}
+
+/* 10. Resize handles — thinner, more subtle */
+.rh-v::after {
+  width: 1px; height: 28px;
+  background: rgba(255,255,255,0.08);
+}
+.rh-v:hover::after, .rh-v[data-resize-handle-active]::after {
+  background: rgba(200,164,90,0.5);
+  height: 40px; box-shadow: none;
+}
+.rh-h::after {
+  height: 1px; width: 28px;
+  background: rgba(255,255,255,0.08);
+}
+.rh-h:hover::after, .rh-h[data-resize-handle-active]::after {
+  background: rgba(200,164,90,0.5);
+  width: 40px; box-shadow: none;
+}
+
+/* 11. Body background — single flat tone */
+.pp-body { background: #07070C; padding: 0.65rem 0.75rem; gap: 0.55rem; }
+
+/* 12. Lang badge + kb hint — quieter */
+.lang-badge {
+  background: transparent; border-color: rgba(255,255,255,0.06);
+  color: rgba(236,237,244,0.38);
+}
+.kbhint {
+  background: transparent; border-color: rgba(255,255,255,0.05);
+  color: rgba(236,237,244,0.2);
+}
+
+/* 13. Dropdown — cleaner */
+.pp-dropdown {
+  background: #0E0E1C;
+  border-color: rgba(255,255,255,0.1);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+  border-radius: 10px;
+}
+.pp-dd-row:hover { background: rgba(255,255,255,0.025); }
+.pp-dd-row.on    { background: rgba(200,164,90,0.06); }
+
+/* ═══════════════════════════════════════
+   FINAL POLISH — depth + focus
+═══════════════════════════════════════ */
+
+/* 1. EDITOR = PRIMARY FOCUS */
+.gc {
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Highlight editor panel slightly */
+.gc:has(.CodeMirror), 
+.gc:has(textarea) {
+  border-color: rgba(200,164,90,0.18);
+  box-shadow: 0 0 0 1px rgba(200,164,90,0.08);
+}
+
+/* Slight hover emphasis */
+.gc:hover {
+  border-color: rgba(255,255,255,0.12);
+}
+
+/* 2. LEFT PANEL — add subtle section depth */
+.gc-body {
+  padding-right: 4px;
+}
+
+/* softer inner scroll feel */
+.gc-body::-webkit-scrollbar {
+  width: 4px;
+}
+.gc-body::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.06);
+}
+
+/* 3. RESIZE HANDLE — make it feel smoother */
+.rh-v::after,
+.rh-h::after {
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+/* 4. TOPBAR — spacing refinement */
+.pp-topbar {
+  padding: 0 1.25rem;
+}
+
+/* give breathing between groups */
+.tb-left,
+.tb-right {
+  gap: 0.75rem;
+}
+
+/* center section tighter */
+.tb-center {
+  gap: 0.3rem;
+}
+
+/* 5. BUTTON INTERACTIONS — more premium feel */
+.pp-arrow,
+.pp-picker-btn,
+.pp-back {
+  transition: all 0.15s ease;
+}
+
+.pp-arrow:hover,
+.pp-picker-btn:hover,
+.pp-back:hover {
+  background: rgba(255,255,255,0.025);
+}
+
+/* 6. EDITOR PANEL HEADER — clearer hierarchy */
+.gc-head {
+  font-size: 0.72rem;
+}
+
+/* editor label stronger */
+.gc-label {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+/* 7. OUTPUT PANEL — even more secondary */
+.gc:has(.out-stripe) {
+  opacity: 0.95;
+}
+
+/* 8. TEXT SHARPNESS */
+body {
+  letter-spacing: -0.01em;
+}
+
+/* 9. SMALL MICRO-DETAIL — makes UI feel polished */
+.gc,
+.pp-topbar {
+  backdrop-filter: blur(0px);
+}
 `;
 
-/* ─── Helpers ──────────────────────────────────────────────────────── */
-function getDiffClass(d = "") {
+/* ══════════════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════════════ */
+const LANG_COLORS = {
+  javascript: "#F7DF1E", typescript: "#3178C6", python: "#3776AB",
+  java: "#ED8B00", cpp: "#00599C", go: "#00ADD8", rust: "#CE422B",
+};
+
+function diffClass(d = "") {
   const v = d.toLowerCase();
-  if (v === "easy")   return "dp-easy";
-  if (v === "medium") return "dp-medium";
-  return "dp-hard";
+  return v === "easy" ? "dc-easy" : v === "medium" ? "dc-medium" : "dc-hard";
 }
 
-function getLangDot(lang) {
-  const map = {
-    javascript: "#F7DF1E",
-    typescript: "#3178C6",
-    python:     "#3776AB",
-    java:       "#ED8B00",
-    cpp:        "#00599C",
-    go:         "#00ADD8",
-    rust:       "#CE422B",
-  };
-  return map[lang] || "var(--gold)";
+function fmtTime(s) {
+  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
-/* ─── Component ────────────────────────────────────────────────────── */
-function ProblemPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+/* ══════════════════════════════════════════════════════════════════
+   SUB-COMPONENTS
+══════════════════════════════════════════════════════════════════ */
 
-  const [currentProblemId, setCurrentProblemId] = useState("two-sum");
-  const [selectedLanguage, setSelectedLanguage]  = useState("javascript");
-  const [code, setCode]       = useState(PROBLEMS[currentProblemId].starterCode.javascript);
-  const [output, setOutput]   = useState(null);
-  const [isRunning, setIsRunning] = useState(false);
-  const [runStatus, setRunStatus] = useState(null); // null | 'running' | 'passed' | 'failed'
+/** Output stripe above the output panel */
+function OutStripe({ status, runMs }) {
+  if (status === "idle") return (
+    <div className="out-stripe">
+      <div className="out-icon oi-idle"><TerminalIcon size={12} color="var(--text-dim)" /></div>
+      <span style={{ color: "var(--text-sub)" }}>Run your code to see results</span>
+    </div>
+  );
+  if (status === "running") return (
+    <div className="out-stripe s-run">
+      <div className="out-icon oi-run"><Loader2Icon size={12} color="var(--gold)" className="spin" /></div>
+      <span style={{ color: "var(--gold-lt)" }}>Executing…</span>
+    </div>
+  );
+  if (status === "passed") return (
+    <div className="out-stripe s-pass">
+      <div className="out-icon oi-pass"><CircleCheckBigIcon size={12} color="var(--green)" /></div>
+      <span style={{ color: "var(--green)", fontWeight: 700 }}>All tests passed</span>
+      {runMs && <span className="out-ms">{runMs} ms</span>}
+    </div>
+  );
+  return (
+    <div className="out-stripe s-fail">
+      <div className="out-icon oi-fail"><XCircleIcon size={12} color="var(--red)" /></div>
+      <span style={{ color: "var(--red)", fontWeight: 700 }}>Wrong answer</span>
+      {runMs && <span className="out-ms">{runMs} ms</span>}
+    </div>
+  );
+}
 
-  const currentProblem = PROBLEMS[currentProblemId];
-  const allProblems    = Object.values(PROBLEMS);
-  const currentIndex   = allProblems.findIndex(p => p.id === currentProblemId);
+/* ══════════════════════════════════════════════════════════════════
+   MAIN PAGE
+══════════════════════════════════════════════════════════════════ */
+export default function ProblemPage() {
+  const { id }    = useParams();
+  const navigate  = useNavigate();
 
+  const allProblems = Object.values(PROBLEMS);
+
+  const [probId,  setProbId]  = useState("two-sum");
+  const [lang,    setLang]    = useState("javascript");
+  const [code,    setCode]    = useState(PROBLEMS["two-sum"].starterCode.javascript);
+  const [output,  setOutput]  = useState(null);
+  const [running, setRunning] = useState(false);
+  const [status,  setStatus]  = useState("idle");   // idle | running | passed | failed
+  const [elapsed, setElapsed] = useState(0);
+  const [ticking, setTicking] = useState(true);
+  const [runMs,   setRunMs]   = useState(null);
+  const [leftTab, setLeftTab] = useState("problem");
+  const [ddOpen,  setDdOpen]  = useState(false);
+
+  const timerRef = useRef(null);
+  const ddRef    = useRef(null);
+
+  const prob = PROBLEMS[probId];
+  const idx  = allProblems.findIndex(p => p.id === probId);
+
+  /* ── timer ── */
+  useEffect(() => {
+    clearInterval(timerRef.current);
+    if (ticking) timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
+    return () => clearInterval(timerRef.current);
+  }, [ticking]);
+
+  /* ── route sync ── */
   useEffect(() => {
     if (id && PROBLEMS[id]) {
-      setCurrentProblemId(id);
-      setCode(PROBLEMS[id].starterCode[selectedLanguage]);
-      setOutput(null);
-      setRunStatus(null);
+      setProbId(id);
+      setCode(PROBLEMS[id].starterCode[lang]);
+      setOutput(null); setStatus("idle");
+      setElapsed(0);   setTicking(true);
+      setLeftTab("problem");
     }
-  }, [id, selectedLanguage]);
+  }, [id, lang]);
 
-  const handleLanguageChange = (e) => {
-    const newLang = e.target.value;
-    setSelectedLanguage(newLang);
-    setCode(currentProblem.starterCode[newLang]);
-    setOutput(null);
-    setRunStatus(null);
+  /* ── close dropdown on outside click ── */
+  useEffect(() => {
+    const h = e => { if (ddRef.current && !ddRef.current.contains(e.target)) setDdOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  const changeLang = e => {
+    const l = e.target.value;
+    setLang(l); setCode(prob.starterCode[l]);
+    setOutput(null); setStatus("idle");
   };
 
-  const handleProblemChange = (newProblemId) => {
-    setRunStatus(null);
-    navigate(`/problem/${newProblemId}`);
+  const changeProblem = pid => {
+    setDdOpen(false); setStatus("idle");
+    navigate(`/problem/${pid}`);
   };
 
-  const goToPrev = () => {
-    if (currentIndex > 0) handleProblemChange(allProblems[currentIndex - 1].id);
-  };
-  const goToNext = () => {
-    if (currentIndex < allProblems.length - 1) handleProblemChange(allProblems[currentIndex + 1].id);
-  };
+  const normalize = s =>
+    s.trim().split("\n")
+     .map(l => l.trim().replace(/\[\s+/g, "[").replace(/\s+\]/g, "]").replace(/\s*,\s*/g, ","))
+     .filter(Boolean).join("\n");
 
-  const normalizeOutput = (output) =>
-    output.trim().split("\n").map(line =>
-      line.trim()
-        .replace(/\[\s+/g, "[")
-        .replace(/\s+\]/g, "]")
-        .replace(/\s*,\s*/g, ",")
-    ).filter(l => l.length > 0).join("\n");
+  const runCode = async () => {
+    setRunning(true); setOutput(null); setStatus("running");
+    const t0  = Date.now();
+    const res = await executeCode(lang, code);
+    const ms  = Date.now() - t0;
+    setRunMs(ms); setOutput(res); setRunning(false);
 
-  const checkIfTestsPassed = (actual, expected) =>
-    normalizeOutput(actual) === normalizeOutput(expected);
-
-  const triggerConfetti = () => {
-    confetti({ particleCount: 80, spread: 250, origin: { x: 0.2, y: 0.6 } });
-    confetti({ particleCount: 80, spread: 250, origin: { x: 0.8, y: 0.6 } });
-  };
-
-  const handleRunCode = async () => {
-    setIsRunning(true);
-    setOutput(null);
-    setRunStatus("running");
-
-    const result = await executeCode(selectedLanguage, code);
-    setOutput(result);
-    setIsRunning(false);
-
-    if (result.success) {
-      const expected   = currentProblem.expectedOutput[selectedLanguage];
-      const passed     = checkIfTestsPassed(result.output, expected);
-      setRunStatus(passed ? "passed" : "failed");
-      if (passed) { triggerConfetti(); toast.success("All tests passed! Great job!"); }
-      else toast.error("Tests failed. Check your output!");
+    if (res.success) {
+      const pass = normalize(res.output) === normalize(prob.expectedOutput[lang]);
+      setStatus(pass ? "passed" : "failed");
+      if (pass) {
+        confetti({ particleCount: 80, spread: 240, origin: { x: .2, y: .6 } });
+        confetti({ particleCount: 80, spread: 240, origin: { x: .8, y: .6 } });
+        toast.success("All tests passed! 🎉");
+        setTicking(false);
+      } else toast.error("Tests failed. Check your output.");
     } else {
-      setRunStatus("failed");
-      toast.error("Code execution failed!");
+      setStatus("failed");
+      toast.error("Execution error.");
     }
   };
 
-  /* Status chip content */
-  const statusChip = () => {
-    if (!runStatus) return null;
-    if (runStatus === "running") return (
-      <div className="pb-status-chip running">
-        <div className="spin-ring" /> Running…
-      </div>
-    );
-    if (runStatus === "passed") return (
-      <div className="pb-status-chip passed">
-        <CircleCheckBigIcon size={12} /> Accepted
-      </div>
-    );
-    return (
-      <div className="pb-status-chip failed">
-        <ZapIcon size={12} /> Wrong Answer
-      </div>
-    );
-  };
+  /* ── status config ── */
+  const SP = {
+    idle:    { lbl: "Ready",       Icon: ZapIcon,        cls: "ps-idle"    },
+    running: { lbl: "Running…",    Icon: Loader2Icon,    cls: "ps-running", spin: true },
+    passed:  { lbl: "Accepted",    Icon: CheckCheck,     cls: "ps-passed"  },
+    failed:  { lbl: "Wrong Answer",Icon: XCircleIcon,    cls: "ps-failed"  },
+  }[status];
 
+  /* ══════════════════════════════════════════════════════════════════
+     RENDER
+  ══════════════════════════════════════════════════════════════════ */
   return (
     <>
       <style>{css}</style>
 
-      <div className="pb-root">
+      <div className="pp-root">
 
-        {/* ── TOPBAR ── */}
-        <header className="pb-topbar">
+        {/* ══ TOPBAR ══ */}
+        <header className="pp-topbar">
 
-          {/* Left */}
-          <div style={{ display:"flex", alignItems:"center", gap:"0.75rem", flexShrink:0 }}>
-            <Link to="/" className="pb-logo">
-              <div className="pb-logo-gem">
+          {/* Left cluster */}
+          <div className="tb-left">
+            <Link to="/" className="pp-logo">
+              <div className="pp-gem">
                 <SparklesIcon size={14} color="#07070C" strokeWidth={2.5} />
               </div>
-              <span className="pb-logo-name">Inter<span>Vue</span></span>
+              <span className="pp-brand">Inter<em>Vue</em></span>
             </Link>
 
-            <div style={{ width:1, height:20, background:"var(--border)" }} />
+            <div className="tb-sep" />
 
-            <Link to="/dashboard" className="pb-back">
-              <ChevronLeftIcon size={13} /> Dashboard
+            <Link to="/dashboard" className="pp-back">
+              <ChevronLeftIcon size={11} />
+              Dashboard
             </Link>
           </div>
 
-          {/* Center — problem picker */}
-          <div className="pb-center">
-            <button className="pb-nav-btn" onClick={goToPrev} disabled={currentIndex <= 0}
-              title="Previous problem">
-              <ChevronLeftIcon size={13} />
-            </button>
-
-            <select
-              className="pb-problem-select"
-              value={currentProblemId}
-              onChange={e => handleProblemChange(e.target.value)}
+          {/* Center — problem navigator */}
+          <div className="tb-center">
+            <button
+              className="pp-arrow"
+              onClick={() => idx > 0 && changeProblem(allProblems[idx - 1].id)}
+              disabled={idx <= 0}
+              title="Previous problem"
             >
-              {allProblems.map((p, i) => (
-                <option key={p.id} value={p.id}>
-                  {i + 1}. {p.title}
-                </option>
-              ))}
-            </select>
-
-            <span className={`diff-pill ${getDiffClass(currentProblem.difficulty)}`}>
-              {currentProblem.difficulty}
-            </span>
-
-            <button className="pb-nav-btn" onClick={goToNext}
-              disabled={currentIndex >= allProblems.length - 1}
-              title="Next problem">
-              <ChevronRightIcon size={13} />
+              <ChevronLeftIcon size={12} />
             </button>
-          </div>
 
-          {/* Right */}
-          <div className="pb-right">
-            {/* Language badge */}
-            <div className="lang-badge">
-              <div className="lang-dot" style={{ background: getLangDot(selectedLanguage) }} />
-              {selectedLanguage}
+            <div className="pp-picker" ref={ddRef}>
+              <button className="pp-picker-btn" onClick={() => setDdOpen(o => !o)}>
+                <span className="pp-picker-label">{idx + 1}. {prob.title}</span>
+                <span className={`dc ${diffClass(prob.difficulty)}`}>{prob.difficulty}</span>
+                <ChevronDownIcon size={10} style={{ color: "var(--text-dim)", flexShrink: 0 }} />
+              </button>
+
+              {ddOpen && (
+                <div className="pp-dropdown">
+                  <div className="pp-dd-inner">
+                    {allProblems.map((p, i) => (
+                      <div
+                        key={p.id}
+                        className={`pp-dd-row ${p.id === probId ? "on" : ""}`}
+                        onClick={() => changeProblem(p.id)}
+                      >
+                        <span className="pp-dd-idx">{String(i + 1).padStart(2, "0")}</span>
+                        <span className="pp-dd-name">{p.title}</span>
+                        <span className={`dc ${diffClass(p.difficulty)}`}>{p.difficulty}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {statusChip()}
-
             <button
-              className="pb-run-btn"
-              onClick={handleRunCode}
-              disabled={isRunning}
+              className="pp-arrow"
+              onClick={() => idx < allProblems.length - 1 && changeProblem(allProblems[idx + 1].id)}
+              disabled={idx >= allProblems.length - 1}
+              title="Next problem"
             >
-              {isRunning
-                ? <><div className="spin-ring" style={{ borderTopColor:"#07070C", borderColor:"rgba(0,0,0,0.2)" }} />Running</>
-                : <><PlayIcon size={13} />Run Code</>
+              <ChevronRightIcon size={12} />
+            </button>
+          </div>
+
+          {/* Right cluster */}
+          <div className="tb-right">
+            {/* Timer */}
+            <button
+              className={`pp-timer ${ticking ? "ticking" : ""}`}
+              onClick={() => setTicking(t => !t)}
+              title={ticking ? "Pause timer" : "Resume timer"}
+            >
+              <span className={`t-pip ${ticking ? "go" : "stop"}`} />
+              {fmtTime(elapsed)}
+            </button>
+
+            {/* Status */}
+            <div className={`pp-status ${SP.cls}`}>
+              <SP.Icon size={11} className={SP.spin ? "spin" : ""} />
+              {SP.lbl}
+            </div>
+
+            {/* Run */}
+            <button className="pp-run" onClick={runCode} disabled={running}>
+              {running
+                ? <><Loader2Icon size={12} className="spin" /> Running</>
+                : <><PlayIcon size={12} /> Run Code</>
               }
             </button>
 
@@ -506,115 +1038,98 @@ function ProblemPage() {
           </div>
         </header>
 
-        {/* ── PANELS ── */}
-        <div className="pb-panels">
-          <PanelGroup direction="horizontal" style={{ height:"100%" }}>
+        {/* ══ BODY — horizontal resizable split ══ */}
+        <div className="pp-body">
+          <PanelGroup direction="horizontal" style={{ height: "100%", gap: "0" }}>
 
-            {/* LEFT — Problem Description */}
-            <Panel defaultSize={40} minSize={25}>
-              <div className="panel-wrap">
-                <div className="panel-labelbar">
-                  <LayoutPanelLeftIcon size={13} />
-                  Problem
-                  <span style={{ marginLeft:"auto", fontSize:"0.65rem", color:"var(--text-dim)", fontWeight:500, textTransform:"none", letterSpacing:0 }}>
-                    {currentIndex + 1} / {allProblems.length}
-                  </span>
+            {/* ── LEFT PANEL — problem description ── */}
+            <Panel defaultSize={38} minSize={28} maxSize={55}>
+              <div className="gc" style={{ height: "100%" }}>
+                {/* Header */}
+                <div className="gc-head">
+                  <div
+                    className={`gc-tab ${leftTab === "problem" ? "on" : ""}`}
+                    onClick={() => setLeftTab("problem")}
+                  >
+                    <BookOpenIcon size={11} /> Problem
+                  </div>
+                  <div
+                    className={`gc-tab ${leftTab === "stats" ? "on" : ""}`}
+                    onClick={() => setLeftTab("stats")}
+                  >
+                    <BarChart3Icon size={11} /> Stats
+                  </div>
+                  <div className="gc-head-r">
+                    <span className={`dc ${diffClass(prob.difficulty)}`}>{prob.difficulty}</span>
+                    <span className="gc-meta">{idx + 1} / {allProblems.length}</span>
+                  </div>
                 </div>
-                <div className="panel-content">
+
+                {/* Scrollable description */}
+                <div className="gc-body">
                   <ProblemDescription
-                    problem={currentProblem}
-                    currentProblemId={currentProblemId}
-                    onProblemChange={handleProblemChange}
+                    problem={prob}
+                    currentProblemId={probId}
+                    onProblemChange={changeProblem}
                     allProblems={allProblems}
                   />
                 </div>
               </div>
             </Panel>
 
-            <PanelResizeHandle className="pb-divider-col" />
+            {/* ── RESIZE HANDLE (horizontal) ── */}
+            <PanelResizeHandle className="rh-v" />
 
-            {/* RIGHT — Editor + Output */}
-            <Panel defaultSize={60} minSize={30}>
-              <PanelGroup direction="vertical" style={{ height:"100%" }}>
+            {/* ── RIGHT PANEL — editor + output stacked ── */}
+            <Panel minSize={38}>
+              <PanelGroup direction="vertical" style={{ height: "100%" }}>
 
                 {/* Editor */}
-                <Panel defaultSize={68} minSize={30}>
-                  <div className="panel-wrap">
-                    <div className="panel-labelbar">
-                      <Code2Icon size={13} />
-                      Code Editor
-                      <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:"0.5rem" }}>
-                        <select
-                          style={{
-                            background:"var(--card2)", border:"1px solid var(--border)",
-                            borderRadius:7, color:"var(--text-sub)",
-                            fontFamily:"'Plus Jakarta Sans',sans-serif",
-                            fontSize:"0.68rem", fontWeight:600, padding:"0.18rem 1.6rem 0.18rem 0.55rem",
-                            outline:"none", cursor:"pointer",
-                            appearance:"none",
-                            backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-                            backgroundRepeat:"no-repeat",
-                            backgroundPosition:"right 0.4rem center",
-                          }}
-                          value={selectedLanguage}
-                          onChange={handleLanguageChange}
-                        >
-                          {Object.keys(currentProblem.starterCode).map(lang => (
-                            <option key={lang} value={lang}>{lang}</option>
+                <Panel defaultSize={64} minSize={35}>
+                  <div className="gc" style={{ height: "100%" }}>
+                    <div className="gc-head">
+                      <div className="gc-label">
+                        <Code2Icon size={11} /> Editor
+                      </div>
+                      <div className="gc-head-r">
+                        {/* Language color pip */}
+                        <div className="lang-badge">
+                          <div
+                            className="l-pip"
+                            style={{
+                              background: LANG_COLORS[lang] || "var(--gold)",
+                              boxShadow: `0 0 5px ${LANG_COLORS[lang] || "var(--gold)"}66`,
+                            }}
+                          />
+                          {lang}
+                        </div>
+                        <span className="kbhint">⌘ ↵</span>
+                        <select className="gc-lang-sel" value={lang} onChange={changeLang}>
+                          {Object.keys(prob.starterCode).map(l => (
+                            <option key={l} value={l}>{l}</option>
                           ))}
                         </select>
                       </div>
                     </div>
-                    <div className="panel-content">
+                    <div className="gc-body">
                       <CodeEditorPanel
-                        selectedLanguage={selectedLanguage}
-                        code={code}
-                        isRunning={isRunning}
-                        onLanguageChange={handleLanguageChange}
-                        onCodeChange={setCode}
-                        onRunCode={handleRunCode}
-                      />
+  selectedLanguage={LANGUAGE_CONFIG[lang].monacoLang}
+  code={code}
+  isRunning={running}
+  onCodeChange={setCode}
+/>
                     </div>
                   </div>
                 </Panel>
 
-                <PanelResizeHandle className="pb-divider-row" />
+                {/* ── RESIZE HANDLE (vertical) ── */}
+                <PanelResizeHandle className="rh-h" />
 
                 {/* Output */}
-                <Panel defaultSize={32} minSize={20}>
-                  <div className="panel-wrap">
-                    <div className="panel-labelbar">
-                      <TerminalIcon size={13} />
-                      Output
-                      {runStatus === "passed" && (
-                        <span style={{
-                          marginLeft:"0.5rem", fontSize:"0.62rem", fontWeight:700,
-                          color:"var(--green)", background:"var(--green-dim)",
-                          border:"1px solid rgba(62,207,142,0.2)",
-                          padding:"0.1rem 0.5rem", borderRadius:"100px",
-                          textTransform:"none", letterSpacing:0,
-                        }}>
-                          Accepted
-                        </span>
-                      )}
-                      {runStatus === "failed" && (
-                        <span style={{
-                          marginLeft:"0.5rem", fontSize:"0.62rem", fontWeight:700,
-                          color:"var(--red)", background:"var(--red-dim)",
-                          border:"1px solid rgba(248,113,113,0.2)",
-                          padding:"0.1rem 0.5rem", borderRadius:"100px",
-                          textTransform:"none", letterSpacing:0,
-                        }}>
-                          Wrong Answer
-                        </span>
-                      )}
-                      {isRunning && (
-                        <span style={{ marginLeft:"0.5rem" }}>
-                          <div className="spin-ring" />
-                        </span>
-                      )}
-                    </div>
-                    <div className="panel-content">
+                <Panel minSize={18}>
+                  <div className="gc" style={{ height: "100%" }}>
+                    <OutStripe status={status} runMs={runMs} />
+                    <div className="gc-body">
                       <OutputPanel output={output} />
                     </div>
                   </div>
@@ -625,9 +1140,8 @@ function ProblemPage() {
 
           </PanelGroup>
         </div>
+
       </div>
     </>
   );
 }
-
-export default ProblemPage;

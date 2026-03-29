@@ -10,7 +10,8 @@ import { chatClient } from "./lib/stream.js";
 
 import chatRoutes from "./routes/chatRoutes.js";
 import sessionRoutes from "./routes/sessionRoute.js";
-
+import dotenv from "dotenv";
+dotenv.config();
 const app = express();
 
 
@@ -38,13 +39,12 @@ app.use(
   })
 );
 
-
 // 🔥 3. CLERK WEBHOOK → SEND TO INNGEST
 app.post("/api/clerk-webhook", async (req, res) => {
   try {
     const event = req.body;
 
-    console.log("📩 Clerk Webhook Received:", event.type);
+    console.log("Clerk Webhook Received:", event.type);
 
     if (event.type === "user.created") {
       await inngest.send({
@@ -62,7 +62,7 @@ app.post("/api/clerk-webhook", async (req, res) => {
 
     res.status(200).json({ success: true });
   } catch (err) {
-    console.error("❌ Clerk webhook error:", err);
+    console.error("Clerk webhook error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -78,7 +78,7 @@ app.get("/stream-users", async (req, res) => {
     const users = await chatClient.queryUsers({});
     res.json(users);
   } catch (err) {
-    console.error("❌ Stream fetch error:", err);
+    console.error("Stream fetch error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -97,13 +97,16 @@ app.use("/api/sessions", sessionRoutes);
 
 // ✅ 8. GLOBAL ERROR HANDLER
 app.use((err, req, res, next) => {
-  console.error("❌ Server Error:", err);
+  console.error("Server Error:", err);
   res.status(500).json({
     message: "Internal Server Error",
     error: err.message,
   });
 });
 
+import codeRoutes from "./routes/codeRoutes.js";
+
+app.use("/api/code", codeRoutes);
 
 // ✅ 9. START SERVER
 const PORT = process.env.PORT || ENV.PORT || 5000;
@@ -111,13 +114,13 @@ const PORT = process.env.PORT || ENV.PORT || 5000;
 const startServer = async () => {
   try {
     await connectDB();
-    console.log("✅ MongoDB connected");
+    console.log("MongoDB connected");
 
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error("❌ Failed to start server:", error);
+    console.error("Failed to start server:", error);
     process.exit(1);
   }
 };
