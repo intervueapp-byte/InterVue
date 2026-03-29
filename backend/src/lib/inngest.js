@@ -3,7 +3,11 @@ import { connectDB } from "./db.js";
 import User from "../models/User.js";
 import { deleteStreamUser, upsertStreamUser } from "./stream.js";
 
-export const inngest = new Inngest({ id: "inter-vue-official" });
+export const inngest = new Inngest({
+  id: "inter-vue-official",
+  eventKey: process.env.INNGEST_EVENT_KEY,
+  signingKey: process.env.INNGEST_SIGNING_KEY,
+});
 
 const syncUser = inngest.createFunction(
   { id: "sync-user" },
@@ -16,11 +20,9 @@ const syncUser = inngest.createFunction(
       console.log("🔥 DB CONNECTED");
 
       const data = event.data;
-      console.log("🧾 RAW EVENT:", data);
 
       const id = data.id;
       const email = data.email_addresses?.[0]?.email_address;
-
 
       if (!id || !email) {
         console.log("❌ MISSING ID OR EMAIL → EXITING");
@@ -40,12 +42,6 @@ const syncUser = inngest.createFunction(
 
       console.log("✅ SAVED USER:", user);
 
-            console.log("📤 Sending to Stream:", {
-  id,
-  name: user.name,
-  image: user.profileImage,
-});
-      // 🔥 Stream user creation
       await upsertStreamUser({
         id: id,
         name: user.name,
@@ -53,7 +49,6 @@ const syncUser = inngest.createFunction(
       });
 
       console.log("🚀 STREAM USER CREATED");
-
     } catch (err) {
       console.error("❌ ERROR:", err);
     }
@@ -81,6 +76,5 @@ const deleteUserFromDB = inngest.createFunction(
     }
   }
 );
-
 
 export const functions = [syncUser, deleteUserFromDB];
