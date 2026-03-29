@@ -17,16 +17,6 @@ dotenv.config();
 
 const app = express();
 
-app.use("/api/inngest", (req, res, next) => {
-  if (req.method !== "POST") {
-    return res.status(200).send("OK");
-  }
-  if (!req.headers["x-inngest-signature"]) {
-    return res.status(200).send("Blocked");
-  }
-  next();
-});
-
 app.use(
   "/api/inngest",
   express.raw({ type: "application/json" }),
