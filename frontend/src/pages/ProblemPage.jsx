@@ -897,10 +897,18 @@ export default function ProblemPage() {
     navigate(`/problem/${pid}`);
   };
 
-  const normalize = s =>
-    s.trim().split("\n")
-     .map(l => l.trim().replace(/\[\s+/g, "[").replace(/\s+\]/g, "]").replace(/\s*,\s*/g, ","))
-     .filter(Boolean).join("\n");
+const normalize = (s) =>
+  s
+    .replace(/\r/g, "")
+    .trim()
+    .split("\n")
+    .map(line =>
+      line
+        .trim()
+        .replace(/\s+/g, "")
+        .replace(/,\]/g, "]")
+    )
+    .join("\n");
 
   const runCode = async () => {
     setRunning(true); setOutput(null); setStatus("running");
