@@ -20,8 +20,7 @@ app.use(
   express.raw({ type: "application/json" }), // ✅ CRITICAL FIX
   serve({
     client: inngest,
-    functions,
-    signingKey: "", // disable signature for Clerk
+    functions, // disable signature for Clerk
   })
 );
 
