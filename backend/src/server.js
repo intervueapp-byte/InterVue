@@ -6,7 +6,7 @@ import { clerkMiddleware } from "@clerk/express";
 import { ENV } from "./lib/env.js";
 import { connectDB } from "./lib/db.js";
 import { inngest, functions } from "./lib/inngest.js";
-import { chatClient } from "./lib/stream.js"; // ✅ IMPORTANT
+import { chatClient } from "./lib/stream.js";
 
 import chatRoutes from "./routes/chatRoutes.js";
 import sessionRoutes from "./routes/sessionRoute.js";
@@ -14,18 +14,19 @@ import sessionRoutes from "./routes/sessionRoute.js";
 const app = express();
 
 
-// 🔥 1. INNGEST ROUTE FIRST (NO JSON BEFORE THIS)
+// 🔥 1. INNGEST ROUTE FIRST (RAW BODY REQUIRED)
 app.use(
   "/api/inngest",
+  express.raw({ type: "application/json" }), // ✅ CRITICAL FIX
   serve({
     client: inngest,
     functions,
-    signingKey: "", // disable for Clerk
+    signingKey: "", // disable signature for Clerk
   })
 );
 
 
-// ✅ 2. JSON + CORS
+// ✅ 2. JSON + CORS (AFTER INNGEST)
 app.use(express.json());
 
 app.use(
@@ -39,14 +40,13 @@ app.use(
 );
 
 
-// 🔥 3. CLERK WEBHOOK → SEND TO INNGEST (MOST IMPORTANT FIX)
+// 🔥 3. CLERK WEBHOOK → SEND TO INNGEST
 app.post("/api/clerk-webhook", async (req, res) => {
   try {
     const event = req.body;
 
     console.log("📩 Clerk Webhook Received:", event.type);
 
-    // 🔥 Map Clerk events → Inngest events
     if (event.type === "user.created") {
       await inngest.send({
         name: "clerk/user.created",
@@ -69,11 +69,11 @@ app.post("/api/clerk-webhook", async (req, res) => {
 });
 
 
-// ✅ 4. CLERK AUTH MIDDLEWARE (NORMAL)
+// ✅ 4. CLERK AUTH MIDDLEWARE
 app.use(clerkMiddleware());
 
 
-// ✅ 5. TEST ROUTE → STREAM USERS
+// ✅ 5. DEBUG ROUTE → STREAM USERS
 app.get("/stream-users", async (req, res) => {
   try {
     const users = await chatClient.queryUsers({});
