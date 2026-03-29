@@ -17,6 +17,10 @@ dotenv.config();
 
 const app = express();
 
+app.get("/api/inngest", (req, res) => {
+  res.status(200).send("OK");
+});
+
 app.post(
   "/api/inngest",
   express.raw({ type: "application/json" }),
