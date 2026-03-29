@@ -77,5 +77,5 @@ const deleteUserFromDB = inngest.createFunction(
   }
 );
 console.log("SIGNING KEY FROM ENV:", process.env.INNGEST_SIGNING_KEY);
-
+console.log("EVENT KEY:", process.env.INNGEST_EVENT_KEY);
 export const functions = [syncUser, deleteUserFromDB];

@@ -19,6 +19,7 @@ const app = express();
 
 app.use(
   "/api/inngest",
+  express.raw({ type: "application/json" }),
   serve({
     client: inngest,
     functions,
