@@ -17,7 +17,7 @@ dotenv.config();
 
 const app = express();
 
-app.use(
+app.post(
   "/api/inngest",
   express.raw({ type: "application/json" }),
   serve({
