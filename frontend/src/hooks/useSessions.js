@@ -2,64 +2,57 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { sessionApi } from "../api/sessions";
 
-export const useCreateSession = () => {
-  const result = useMutation({
+export const useCreateSession = (token) => {
+  return useMutation({
     mutationKey: ["createSession"],
-    mutationFn: sessionApi.createSession,
+    mutationFn: (data) => sessionApi.createSession(data, token),
     onSuccess: () => toast.success("Session created successfully!"),
-    onError: (error) => toast.error(error.response?.data?.message || "Failed to create room"),
+    onError: (error) =>
+      toast.error(error.response?.data?.message || "Failed to create room"),
   });
-
-  return result;
 };
 
-export const useActiveSessions = () => {
-  const result = useQuery({
-    queryKey: ["activeSessions"],
-    queryFn: sessionApi.getActiveSessions,
+export const useActiveSessions = (token) => {
+  return useQuery({
+    queryKey: ["activeSessions", token],
+    queryFn: () => sessionApi.getActiveSessions(token),
+    enabled: !!token,
   });
-
-  return result;
 };
 
-export const useMyRecentSessions = () => {
-  const result = useQuery({
-    queryKey: ["myRecentSessions"],
-    queryFn: sessionApi.getMyRecentSessions,
+export const useMyRecentSessions = (token) => {
+  return useQuery({
+    queryKey: ["myRecentSessions", token],
+    queryFn: () => sessionApi.getMyRecentSessions(token),
+    enabled: !!token,
   });
-
-  return result;
 };
 
-export const useSessionById = (id) => {
-  const result = useQuery({
-    queryKey: ["session", id],
-    queryFn: () => sessionApi.getSessionById(id),
-    enabled: !!id,
-    refetchInterval: 5000, // refetch every 5 seconds to detect session status changes
+export const useSessionById = (id, token) => {
+  return useQuery({
+    queryKey: ["session", id, token],
+    queryFn: () => sessionApi.getSessionById(id, token),
+    enabled: !!id && !!token,
+    refetchInterval: 5000,
   });
-
-  return result;
 };
 
-export const useJoinSession = () => {
-  const result = useMutation({
+export const useJoinSession = (token) => {
+  return useMutation({
     mutationKey: ["joinSession"],
-    mutationFn: sessionApi.joinSession,
+    mutationFn: (id) => sessionApi.joinSession(id, token),
     onSuccess: () => toast.success("Joined session successfully!"),
-    onError: (error) => toast.error(error.response?.data?.message || "Failed to join session"),
+    onError: (error) =>
+      toast.error(error.response?.data?.message || "Failed to join session"),
   });
-
-  return result;
 };
 
-export const useEndSession = () => {
-  const result = useMutation({
+export const useEndSession = (token) => {
+  return useMutation({
     mutationKey: ["endSession"],
-    mutationFn: sessionApi.endSession,
+    mutationFn: (id) => sessionApi.endSession(id, token),
     onSuccess: () => toast.success("Session ended successfully!"),
-    onError: (error) => toast.error(error.response?.data?.message || "Failed to end session"),
+    onError: (error) =>
+      toast.error(error.response?.data?.message || "Failed to end session"),
   });
-
-  return result;
 };

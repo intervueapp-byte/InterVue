@@ -9,26 +9,35 @@ export const createSession = async (req, res) => {
     const user = await User.findOne({ clerkId: userId });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const { problem } = req.body;
+    const { problem, difficulty } = req.body;
 
-    const call = streamClient.video.call("default", `${userId}-${Date.now()}`);
+    const safeDifficulty = difficulty || "easy";
 
-    await call.create({
-      data: {
-        created_by_id: userId,
-      },
-    });
+    let callId = `${userId}-${Date.now()}`;
+
+    try {
+      const call = streamClient.video.call("default", callId);
+
+      await call.create({
+        data: {
+          created_by_id: userId,
+        },
+      });
+    } catch (err) {
+      console.log("⚠️ STREAM ERROR:", err.message);
+    }
 
     const session = await Session.create({
       problem,
+      difficulty: safeDifficulty,
       host: user._id,
-      callId: call.id,
+      callId,
       status: "active",
     });
 
     res.status(201).json(session);
   } catch (error) {
-    console.error(error);
+    console.error("🔥 CREATE SESSION ERROR:", error);
     res.status(500).json({ message: "Failed to create session" });
   }
 };

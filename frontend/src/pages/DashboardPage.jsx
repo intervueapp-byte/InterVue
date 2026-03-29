@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router";
+import { useAuth } from "@clerk/clerk-react";
 import { useUser, UserButton } from "@clerk/clerk-react";
 import {
   useActiveSessions,
@@ -34,6 +35,7 @@ import StatsCards from "../components/StatsCards";
 import ActiveSessions from "../components/ActiveSessions";
 import RecentSessions from "../components/RecentSessions";
 import CreateSessionModal from "../components/CreateSessionModal";
+
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,700;1,9..144,800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
@@ -631,16 +633,24 @@ function SkelRows({ n = 3 }) {
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { getToken, isSignedIn } = useAuth();
+const [token, setToken] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [roomConfig, setRoomConfig] = useState({ problem: "", difficulty: "" });
   const [quizScore, setQuizScore] = useState(null);
   const [now, setNow] = useState(new Date());
 
-  const createSessionMutation = useCreateSession();
-  const { data: activeSessionsData, isLoading: loadingActiveSessions } =
-    useActiveSessions();
-  const { data: recentSessionsData, isLoading: loadingRecentSessions } =
-    useMyRecentSessions();
+  console.log("SENDING DATA:", {
+  problem: roomConfig.problem,
+  difficulty: roomConfig.difficulty,
+});
+const createSessionMutation = useCreateSession(token);
+
+const { data: activeSessionsData, isLoading: loadingActiveSessions } =
+  useActiveSessions(token);
+
+const { data: recentSessionsData, isLoading: loadingRecentSessions } =
+  useMyRecentSessions(token);
 
   const activeSessions = activeSessionsData?.sessions || [];
   const recentSessions = recentSessionsData?.sessions || [];
@@ -652,21 +662,26 @@ export default function DashboardPage() {
     return () => clearInterval(t);
   }, []);
 
+useEffect(() => {
+  const loadToken = async () => {
+    if (!isSignedIn) return;
+
+    const t = await getToken();
+    console.log("TOKEN:", t); // must print
+    setToken(t);
+  };
+
+  loadToken();
+}, [isSignedIn]);
+
   // ── original handler — unchanged ──
   const handleCreateRoom = () => {
     if (!roomConfig.problem || !roomConfig.difficulty) return;
-    createSessionMutation.mutate(
-      {
-        problem: roomConfig.problem,
-        difficulty: roomConfig.difficulty.toLowerCase(),
-      },
-      {
-        onSuccess: (data) => {
-          setShowCreateModal(false);
-          navigate(`/session/${data.session._id}`);
-        },
-      },
-    );
+    console.log("ROOM CONFIG:", roomConfig);
+   createSessionMutation.mutate({
+    problem: roomConfig.problem,
+    difficulty: roomConfig.difficulty.toLowerCase(),
+  });
   };
 
   // ── original helper — unchanged ──
