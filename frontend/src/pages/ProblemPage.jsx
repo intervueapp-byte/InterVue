@@ -14,7 +14,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ProblemDescription from "../components/ProblemDescription";
 import OutputPanel        from "../components/OutputPanel";
 import CodeEditorPanel    from "../components/CodeEditorPanel";
-import { executeCode }    from "../lib/piston";
+import { useAxios } from "../lib/useAxios";
 import { LANGUAGE_CONFIG } from "../data/problems";
 import toast    from "react-hot-toast";
 import confetti from "canvas-confetti";
@@ -860,7 +860,7 @@ export default function ProblemPage() {
 
   const prob = PROBLEMS[probId];
   const idx  = allProblems.findIndex(p => p.id === probId);
-
+const axios = useAxios();
   /* ── timer ── */
   useEffect(() => {
     clearInterval(timerRef.current);
@@ -910,27 +910,61 @@ const normalize = (s) =>
     )
     .join("\n");
 
-  const runCode = async () => {
-    setRunning(true); setOutput(null); setStatus("running");
-    const t0  = Date.now();
-    const res = await executeCode(lang, code);
-    const ms  = Date.now() - t0;
-    setRunMs(ms); setOutput(res); setRunning(false);
+const runCode = async () => {
+  setRunning(true);
+  setOutput(null);
+  setStatus("running");
 
-    if (res.success) {
-      const pass = normalize(res.output) === normalize(prob.expectedOutput[lang]);
-      setStatus(pass ? "passed" : "failed");
-      if (pass) {
-        confetti({ particleCount: 80, spread: 240, origin: { x: .2, y: .6 } });
-        confetti({ particleCount: 80, spread: 240, origin: { x: .8, y: .6 } });
-        toast.success("All tests passed! 🎉");
-        setTicking(false);
-      } else toast.error("Tests failed. Check your output.");
+  const t0 = Date.now();
+
+  try {
+    const res = await axios.post("/code/execute", {
+      language: lang,
+      code: code,
+    });
+
+    console.log("FULL RESPONSE:", res);
+    console.log("DATA:", res.data);
+
+    const ms = Date.now() - t0;
+    setRunMs(ms);
+
+    const result = res.data;
+
+    setOutput({
+      success: true,
+      output: result.output || "No output",
+    });
+
+    setRunning(false);
+
+    const pass =
+      normalize(result.output) === normalize(prob.expectedOutput[lang]);
+
+    setStatus(pass ? "passed" : "failed");
+
+    if (pass) {
+      confetti({ particleCount: 80, spread: 240 });
+      toast.success("All tests passed! 🎉");
+      setTicking(false);
     } else {
-      setStatus("failed");
-      toast.error("Execution error.");
+      toast.error("Tests failed. Check your output.");
     }
-  };
+
+  } catch (error) {
+    console.error("ERROR:", error);
+
+    setRunning(false);
+    setStatus("failed");
+
+    setOutput({
+      success: false,
+      output: "Execution failed",
+    });
+
+    toast.error("Execution error");
+  }
+};
 
   /* ── status config ── */
   const SP = {

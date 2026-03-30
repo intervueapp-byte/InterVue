@@ -4,7 +4,7 @@ import { useUser } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
 import { initializeStreamClient, disconnectStreamClient } from "../lib/stream";
 import { sessionApi } from "../api/sessions";
-
+import { useAuth } from "@clerk/clerk-react";
 function useStreamClient(session, loadingSession, isHost, isParticipant) {
   const { user } = useUser();
 
@@ -13,7 +13,7 @@ function useStreamClient(session, loadingSession, isHost, isParticipant) {
   const [chatClient, setChatClient] = useState(null);
   const [channel, setChannel] = useState(null);
   const [isInitializingCall, setIsInitializingCall] = useState(true);
-
+const { getToken } = useAuth();
   useEffect(() => {
     let videoCall = null;
     let chatClientInstance = null;
@@ -25,7 +25,9 @@ function useStreamClient(session, loadingSession, isHost, isParticipant) {
       if (session.status === "completed") return;
 
       try {
-        const { token, apiKey } = await sessionApi.getStreamToken();
+const clerkToken = await getToken();
+
+const { token, apiKey } = await sessionApi.getStreamToken(clerkToken);
 
         const client = await initializeStreamClient(
           {
@@ -42,9 +44,9 @@ function useStreamClient(session, loadingSession, isHost, isParticipant) {
         await videoCall.join({ create: true });
         setCall(videoCall);
 
-        const chatClientInstanceLocal = StreamChat.getInstance(apiKey);
+        chatClientInstance = StreamChat.getInstance(apiKey);
 
-        await chatClientInstanceLocal.connectUser(
+        await chatClientInstance.connectUser(
           {
             id: user.id,
             name: user.fullName || "User",
@@ -74,18 +76,18 @@ function useStreamClient(session, loadingSession, isHost, isParticipant) {
       initCall();
     }
 
-    return () => {
-      (async () => {
-        try {
-          if (videoCall) await videoCall.leave();
-          if (chatClientInstance) await chatClientInstance.disconnectUser();
-          await disconnectStreamClient();
-        } catch (error) {
-          console.error("Cleanup error:", error);
-        }
-      })();
-    };
-  }, [session, loadingSession, isHost, isParticipant, user]);
+return () => {
+  (async () => {
+    try {
+      if (videoCall) await videoCall.leave();
+      if (chatClientInstance) await chatClientInstance.disconnectUser();
+      if (streamClient) await disconnectStreamClient();
+    } catch (error) {
+      console.error("Cleanup error:", error);
+    }
+  })();
+};
+}, [session, loadingSession, isHost, isParticipant, user, getToken]);
 
   return {
     streamClient,

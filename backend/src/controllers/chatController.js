@@ -11,12 +11,13 @@ export async function getStreamToken(req, res) {
 
     const token = streamClient.createToken(userId);
 
-    res.status(200).json({
-      token,
-      userId,
-      userName: req.user.name,
-      userImage: req.user.profileImage, // ⚠️ FIXED FIELD
-    });
+res.status(200).json({
+  token,
+  apiKey: process.env.STREAM_API_KEY,
+  userId,
+  userName: req.user.name,
+  userImage: req.user.profileImage,
+});
 
   } catch (error) {
     console.log("Error in getStreamToken controller:", error.message);

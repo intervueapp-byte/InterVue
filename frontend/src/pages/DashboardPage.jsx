@@ -36,7 +36,7 @@ import RecentSessions from "../components/RecentSessions";
 import CreateSessionModal from "../components/CreateSessionModal";
 import { StreamChat } from "stream-chat";
 import { useQueryClient } from "@tanstack/react-query";
-
+import { sessionApi } from "../api/sessions";
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,700;1,9..144,800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
@@ -654,7 +654,7 @@ const { data: activeSessionsData, isLoading: loadingActiveSessions } =
 const { data: recentSessionsData, isLoading: loadingRecentSessions } =
   useMyRecentSessions(token);
 
-  const activeSessions = activeSessionsData?.sessions || [];
+const activeSessions = activeSessionsData || [];
   const recentSessions = recentSessionsData?.sessions || [];
 
   useEffect(() => {
@@ -677,17 +677,22 @@ useEffect(() => {
 }, [isSignedIn]);
 
 useEffect(() => {
-  if (!user) return;
+if (!user || !token) return;
 
   let client;
   let channel;
 
   const initRealtime = async () => {
  try {
-  const { token, apiKey, userId, userName, userImage } =
-    await sessionApi.getStreamToken();
+const {
+  token: streamToken,
+  apiKey,
+  userId,
+  userName,
+  userImage,
+} = await sessionApi.getStreamToken(token);
 
-  client = StreamChat.getInstance(apiKey);
+  client = StreamChat.getInstance(apiKey);  
 
   await client.connectUser(
     {
@@ -695,7 +700,7 @@ useEffect(() => {
       name: userName || "User",
       image: userImage,
     },
-    token
+    streamToken
   );
 
   channel = client.channel("messaging", "global");
@@ -704,7 +709,7 @@ useEffect(() => {
   channel.on((event) => {
     if (event.type === "session.created") {
       console.log("🔥 REALTIME EVENT:", event);
-      queryClient.invalidateQueries(["activeSessions"]);
+      queryClient.invalidateQueries(["activeSessions", token]);
     }
   });
 
@@ -719,7 +724,7 @@ useEffect(() => {
     if (channel) channel.off("session.created");
     if (client) client.disconnectUser();
   };
-}, [user]);
+}, [user, token]);
   // ── original handler — unchanged ──
 const handleCreateRoom = () => {
   if (!roomConfig.problem || !roomConfig.difficulty) return;

@@ -3,21 +3,27 @@ import User from "../models/User.js";
 
 export const protectRoute = async (req, res, next) => {
   try {
-    // ✅ Correct way to get Clerk user
-    const { userId } = getAuth(req);
+    const { userId, sessionClaims } = getAuth(req);
 
     if (!userId) {
-      return res.status(401).json({ message: "Unauthorized - no userId" });
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // ✅ Find user in DB
-    const user = await User.findOne({ clerkId: userId });
+    let user = await User.findOne({ clerkId: userId });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found in DB" });
+      console.log("⚡ Creating user on-the-fly");
+
+      user = await User.create({
+        clerkId: userId,
+        email:
+          sessionClaims?.email_addresses?.[0]?.email_address ||
+          `${userId}@temp.com`, // ✅ FIXED
+        name: sessionClaims?.first_name || "User",
+        profileImage: "",
+      });
     }
 
-    // ✅ Attach user
     req.user = user;
 
     next();

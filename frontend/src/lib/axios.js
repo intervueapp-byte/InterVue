@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://intervue-t8xv.onrender.com/api",
+  baseURL: "http://localhost:3000/api", 
   withCredentials: true,
 });
 

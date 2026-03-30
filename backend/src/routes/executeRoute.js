@@ -7,9 +7,9 @@ const router = express.Router();
 const RAPID_API_KEY = process.env.RAPID_API_KEY;
 
 const LANGUAGE_MAP = {
-  javascript: 63, // Node.js
-  python: 71,     // Python 3
-  java: 62,       // Java
+  javascript: 63,
+  python: 71,     
+  java: 62,     
 };
 
 router.post("/", async (req, res) => {

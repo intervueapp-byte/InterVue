@@ -13,7 +13,7 @@ export const createSession = async (req, res) => {
 
     const safeDifficulty = difficulty || "easy";
 
-    let callId = `${userId}-${Date.now()}`;
+const callId = `${userId}-${Date.now()}`;
 
     try {
       const call = streamClient.video.call("default", callId);
@@ -34,10 +34,15 @@ export const createSession = async (req, res) => {
       callId,
       status: "active",
     });
-    await streamClient.channel("messaging", "global").sendEvent({
-  type: "session.created",
-  sessionId: session._id.toString(),
-});
+
+    try {
+  await streamClient.channel("messaging", "global").sendEvent({
+    type: "session.created",
+    sessionId: session._id.toString(),
+  });
+} catch (err) {
+  console.log("⚠️ STREAM EVENT ERROR:", err.message);
+}
 
     res.status(201).json(session);
   } catch (error) {

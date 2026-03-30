@@ -20,10 +20,11 @@ export const executeCode = async (req, res) => {
       versionIndex: "0",
     });
 
-    return res.json({
-      success: true,
-      output: response.data.output,
-    });
+return res.json({
+  success: true,
+  output: response.data.output,
+  error: response.data.statusCode !== 200,
+});
 
   } catch (error) {
     console.error("JDoodle error:", error.response?.data || error.message);
