@@ -34,6 +34,8 @@ import StatsCards from "../components/StatsCards";
 import ActiveSessions from "../components/ActiveSessions";
 import RecentSessions from "../components/RecentSessions";
 import CreateSessionModal from "../components/CreateSessionModal";
+import { StreamChat } from "stream-chat";
+import { useQueryClient } from "@tanstack/react-query";
 
 
 const css = `
@@ -638,6 +640,7 @@ const [token, setToken] = useState(null);
   const [roomConfig, setRoomConfig] = useState({ problem: "", difficulty: "" });
   const [quizScore, setQuizScore] = useState(null);
   const [now, setNow] = useState(new Date());
+const queryClient = useQueryClient();
 
   console.log("SENDING DATA:", {
   problem: roomConfig.problem,
@@ -673,6 +676,50 @@ useEffect(() => {
   loadToken();
 }, [isSignedIn]);
 
+useEffect(() => {
+  if (!user) return;
+
+  let client;
+  let channel;
+
+  const initRealtime = async () => {
+ try {
+  const { token, apiKey, userId, userName, userImage } =
+    await sessionApi.getStreamToken();
+
+  client = StreamChat.getInstance(apiKey);
+
+  await client.connectUser(
+    {
+      id: userId,
+      name: userName || "User",
+      image: userImage,
+    },
+    token
+  );
+
+  channel = client.channel("messaging", "global");
+  await channel.watch();
+
+  channel.on((event) => {
+    if (event.type === "session.created") {
+      console.log("🔥 REALTIME EVENT:", event);
+      queryClient.invalidateQueries(["activeSessions"]);
+    }
+  });
+
+} catch (err) {
+  console.error("Realtime error:", err);
+}
+  };
+
+  initRealtime();
+
+  return () => {
+    if (channel) channel.off("session.created");
+    if (client) client.disconnectUser();
+  };
+}, [user]);
   // ── original handler — unchanged ──
 const handleCreateRoom = () => {
   if (!roomConfig.problem || !roomConfig.difficulty) return;

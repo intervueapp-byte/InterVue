@@ -34,6 +34,10 @@ export const createSession = async (req, res) => {
       callId,
       status: "active",
     });
+    await streamClient.channel("messaging", "global").sendEvent({
+  type: "session.created",
+  sessionId: session._id.toString(),
+});
 
     res.status(201).json(session);
   } catch (error) {
