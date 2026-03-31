@@ -7,12 +7,8 @@ import {
 import { useState } from "react";
 import { UserButton } from "@clerk/clerk-react";
 
-/* ══════════════════════════════════════════════════════════════════
-   CSS
-══════════════════════════════════════════════════════════════════ */
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-
   :root {
     --ink:         #07070C;
     --surface:     #0B0B14;

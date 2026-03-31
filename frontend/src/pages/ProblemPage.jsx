@@ -12,18 +12,30 @@ import { UserButton } from "@clerk/clerk-react";
 import { PROBLEMS } from "../data/problems";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ProblemDescription from "../components/ProblemDescription";
-import OutputPanel        from "../components/OutputPanel";
-import CodeEditorPanel    from "../components/CodeEditorPanel";
+import OutputPanel from "../components/OutputPanel";
+import CodeEditorPanel from "../components/CodeEditorPanel";
 import { useAxios } from "../lib/useAxios";
 import { LANGUAGE_CONFIG } from "../data/problems";
-import toast    from "react-hot-toast";
+import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
 
 import {
-  SparklesIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon,
-  PlayIcon, Loader2Icon, CheckCheck, XCircleIcon, ZapIcon,
-  Code2Icon, TerminalIcon, BookOpenIcon, TimerIcon,
-  BarChart3Icon, CircleCheckBigIcon, PauseIcon,
+  SparklesIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronDownIcon,
+  PlayIcon,
+  Loader2Icon,
+  CheckCheck,
+  XCircleIcon,
+  ZapIcon,
+  Code2Icon,
+  TerminalIcon,
+  BookOpenIcon,
+  TimerIcon,
+  BarChart3Icon,
+  CircleCheckBigIcon,
+  PauseIcon,
 } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════════════════
@@ -787,8 +799,13 @@ body {
    HELPERS
 ══════════════════════════════════════════════════════════════════ */
 const LANG_COLORS = {
-  javascript: "#F7DF1E", typescript: "#3178C6", python: "#3776AB",
-  java: "#ED8B00", cpp: "#00599C", go: "#00ADD8", rust: "#CE422B",
+  javascript: "#F7DF1E",
+  typescript: "#3178C6",
+  python: "#3776AB",
+  java: "#ED8B00",
+  cpp: "#00599C",
+  go: "#00ADD8",
+  rust: "#CE422B",
 };
 
 function diffClass(d = "") {
@@ -806,28 +823,43 @@ function fmtTime(s) {
 
 /** Output stripe above the output panel */
 function OutStripe({ status, runMs }) {
-  if (status === "idle") return (
-    <div className="out-stripe">
-      <div className="out-icon oi-idle"><TerminalIcon size={12} color="var(--text-dim)" /></div>
-      <span style={{ color: "var(--text-sub)" }}>Run your code to see results</span>
-    </div>
-  );
-  if (status === "running") return (
-    <div className="out-stripe s-run">
-      <div className="out-icon oi-run"><Loader2Icon size={12} color="var(--gold)" className="spin" /></div>
-      <span style={{ color: "var(--gold-lt)" }}>Executing…</span>
-    </div>
-  );
-  if (status === "passed") return (
-    <div className="out-stripe s-pass">
-      <div className="out-icon oi-pass"><CircleCheckBigIcon size={12} color="var(--green)" /></div>
-      <span style={{ color: "var(--green)", fontWeight: 700 }}>All tests passed</span>
-      {runMs && <span className="out-ms">{runMs} ms</span>}
-    </div>
-  );
+  if (status === "idle")
+    return (
+      <div className="out-stripe">
+        <div className="out-icon oi-idle">
+          <TerminalIcon size={12} color="var(--text-dim)" />
+        </div>
+        <span style={{ color: "var(--text-sub)" }}>
+          Run your code to see results
+        </span>
+      </div>
+    );
+  if (status === "running")
+    return (
+      <div className="out-stripe s-run">
+        <div className="out-icon oi-run">
+          <Loader2Icon size={12} color="var(--gold)" className="spin" />
+        </div>
+        <span style={{ color: "var(--gold-lt)" }}>Executing…</span>
+      </div>
+    );
+  if (status === "passed")
+    return (
+      <div className="out-stripe s-pass">
+        <div className="out-icon oi-pass">
+          <CircleCheckBigIcon size={12} color="var(--green)" />
+        </div>
+        <span style={{ color: "var(--green)", fontWeight: 700 }}>
+          All tests passed
+        </span>
+        {runMs && <span className="out-ms">{runMs} ms</span>}
+      </div>
+    );
   return (
     <div className="out-stripe s-fail">
-      <div className="out-icon oi-fail"><XCircleIcon size={12} color="var(--red)" /></div>
+      <div className="out-icon oi-fail">
+        <XCircleIcon size={12} color="var(--red)" />
+      </div>
       <span style={{ color: "var(--red)", fontWeight: 700 }}>Wrong answer</span>
       {runMs && <span className="out-ms">{runMs} ms</span>}
     </div>
@@ -838,33 +870,34 @@ function OutStripe({ status, runMs }) {
    MAIN PAGE
 ══════════════════════════════════════════════════════════════════ */
 export default function ProblemPage() {
-  const { id }    = useParams();
-  const navigate  = useNavigate();
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   const allProblems = Object.values(PROBLEMS);
 
-  const [probId,  setProbId]  = useState("two-sum");
-  const [lang,    setLang]    = useState("javascript");
-  const [code,    setCode]    = useState(PROBLEMS["two-sum"].starterCode.javascript);
-  const [output,  setOutput]  = useState(null);
+  const [probId, setProbId] = useState("two-sum");
+  const [lang, setLang] = useState("javascript");
+  const [code, setCode] = useState(PROBLEMS["two-sum"].starterCode.javascript);
+  const [output, setOutput] = useState(null);
   const [running, setRunning] = useState(false);
-  const [status,  setStatus]  = useState("idle");   // idle | running | passed | failed
+  const [status, setStatus] = useState("idle"); // idle | running | passed | failed
   const [elapsed, setElapsed] = useState(0);
   const [ticking, setTicking] = useState(true);
-  const [runMs,   setRunMs]   = useState(null);
+  const [runMs, setRunMs] = useState(null);
   const [leftTab, setLeftTab] = useState("problem");
-  const [ddOpen,  setDdOpen]  = useState(false);
+  const [ddOpen, setDdOpen] = useState(false);
 
   const timerRef = useRef(null);
-  const ddRef    = useRef(null);
+  const ddRef = useRef(null);
 
   const prob = PROBLEMS[probId];
-  const idx  = allProblems.findIndex(p => p.id === probId);
-const axios = useAxios();
+  const idx = allProblems.findIndex((p) => p.id === probId);
+  const axios = useAxios();
   /* ── timer ── */
   useEffect(() => {
     clearInterval(timerRef.current);
-    if (ticking) timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
+    if (ticking)
+      timerRef.current = setInterval(() => setElapsed((e) => e + 1), 1000);
     return () => clearInterval(timerRef.current);
   }, [ticking]);
 
@@ -873,105 +906,111 @@ const axios = useAxios();
     if (id && PROBLEMS[id]) {
       setProbId(id);
       setCode(PROBLEMS[id].starterCode[lang]);
-      setOutput(null); setStatus("idle");
-      setElapsed(0);   setTicking(true);
+      setOutput(null);
+      setStatus("idle");
+      setElapsed(0);
+      setTicking(true);
       setLeftTab("problem");
     }
   }, [id, lang]);
 
   /* ── close dropdown on outside click ── */
   useEffect(() => {
-    const h = e => { if (ddRef.current && !ddRef.current.contains(e.target)) setDdOpen(false); };
+    const h = (e) => {
+      if (ddRef.current && !ddRef.current.contains(e.target)) setDdOpen(false);
+    };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  const changeLang = e => {
+  const changeLang = (e) => {
     const l = e.target.value;
-    setLang(l); setCode(prob.starterCode[l]);
-    setOutput(null); setStatus("idle");
+    setLang(l);
+    setCode(prob.starterCode[l]);
+    setOutput(null);
+    setStatus("idle");
   };
 
-  const changeProblem = pid => {
-    setDdOpen(false); setStatus("idle");
+  const changeProblem = (pid) => {
+    setDdOpen(false);
+    setStatus("idle");
     navigate(`/problem/${pid}`);
   };
 
-const normalize = (s) =>
-  s
-    .replace(/\r/g, "")
-    .trim()
-    .split("\n")
-    .map(line =>
-      line
-        .trim()
-        .replace(/\s+/g, "")
-        .replace(/,\]/g, "]")
-    )
-    .join("\n");
+  const normalize = (s) =>
+    s
+      .replace(/\r/g, "")
+      .trim()
+      .split("\n")
+      .map((line) => line.trim().replace(/\s+/g, "").replace(/,\]/g, "]"))
+      .join("\n");
 
-const runCode = async () => {
-  setRunning(true);
-  setOutput(null);
-  setStatus("running");
+  const runCode = async () => {
+    setRunning(true);
+    setOutput(null);
+    setStatus("running");
 
-  const t0 = Date.now();
+    const t0 = Date.now();
 
-  try {
-    const res = await axios.post("/code/execute", {
-      language: lang,
-      code: code,
-    });
+    try {
+      const res = await axios.post("/code/execute", {
+        language: lang,
+        code: code,
+      });
 
-    console.log("FULL RESPONSE:", res);
-    console.log("DATA:", res.data);
+      console.log("FULL RESPONSE:", res);
+      console.log("DATA:", res.data);
 
-    const ms = Date.now() - t0;
-    setRunMs(ms);
+      const ms = Date.now() - t0;
+      setRunMs(ms);
 
-    const result = res.data;
+      const result = res.data;
 
-    setOutput({
-      success: true,
-      output: result.output || "No output",
-    });
+      setOutput({
+        success: true,
+        output: result.output || "No output",
+      });
 
-    setRunning(false);
+      setRunning(false);
 
-    const pass =
-      normalize(result.output) === normalize(prob.expectedOutput[lang]);
+      const pass =
+        normalize(result.output) === normalize(prob.expectedOutput[lang]);
 
-    setStatus(pass ? "passed" : "failed");
+      setStatus(pass ? "passed" : "failed");
 
-    if (pass) {
-      confetti({ particleCount: 80, spread: 240 });
-      toast.success("All tests passed! 🎉");
-      setTicking(false);
-    } else {
-      toast.error("Tests failed. Check your output.");
+      if (pass) {
+        confetti({ particleCount: 80, spread: 240 });
+        toast.success("All tests passed! 🎉");
+        setTicking(false);
+      } else {
+        toast.error("Tests failed. Check your output.");
+      }
+    } catch (error) {
+      console.error("ERROR:", error);
+
+      setRunning(false);
+      setStatus("failed");
+
+      setOutput({
+        success: false,
+        output: "Execution failed",
+      });
+
+      toast.error("Execution error");
     }
-
-  } catch (error) {
-    console.error("ERROR:", error);
-
-    setRunning(false);
-    setStatus("failed");
-
-    setOutput({
-      success: false,
-      output: "Execution failed",
-    });
-
-    toast.error("Execution error");
-  }
-};
+  };
 
   /* ── status config ── */
   const SP = {
-    idle:    { lbl: "Ready",       Icon: ZapIcon,        cls: "ps-idle"    },
-    running: { lbl: "Running…",    Icon: Loader2Icon,    cls: "ps-running", spin: true },
-    passed:  { lbl: "Accepted",    Icon: CheckCheck,     cls: "ps-passed"  },
-    failed:  { lbl: "Wrong Answer",Icon: XCircleIcon,    cls: "ps-failed"  },
+    idle: { lbl: "Ready", Icon: ZapIcon, cls: "ps-idle" },
+    running: {
+      lbl: "Running…",
+      Icon: Loader2Icon,
+      cls: "ps-running",
+      spin: true,
+    },
+    passed: { lbl: "Accepted", Icon: CheckCheck, cls: "ps-passed" },
+    failed: { lbl: "Wrong Answer", Icon: XCircleIcon, cls: "ps-failed" },
   }[status];
 
   /* ══════════════════════════════════════════════════════════════════
@@ -982,17 +1021,17 @@ const runCode = async () => {
       <style>{css}</style>
 
       <div className="pp-root">
-
         {/* ══ TOPBAR ══ */}
         <header className="pp-topbar">
-
           {/* Left cluster */}
           <div className="tb-left">
             <Link to="/" className="pp-logo">
               <div className="pp-gem">
                 <SparklesIcon size={14} color="#07070C" strokeWidth={2.5} />
               </div>
-              <span className="pp-brand">Inter<em>Vue</em></span>
+              <span className="pp-brand">
+                Inter<em>Vue</em>
+              </span>
             </Link>
 
             <div className="tb-sep" />
@@ -1015,10 +1054,20 @@ const runCode = async () => {
             </button>
 
             <div className="pp-picker" ref={ddRef}>
-              <button className="pp-picker-btn" onClick={() => setDdOpen(o => !o)}>
-                <span className="pp-picker-label">{idx + 1}. {prob.title}</span>
-                <span className={`dc ${diffClass(prob.difficulty)}`}>{prob.difficulty}</span>
-                <ChevronDownIcon size={10} style={{ color: "var(--text-dim)", flexShrink: 0 }} />
+              <button
+                className="pp-picker-btn"
+                onClick={() => setDdOpen((o) => !o)}
+              >
+                <span className="pp-picker-label">
+                  {idx + 1}. {prob.title}
+                </span>
+                <span className={`dc ${diffClass(prob.difficulty)}`}>
+                  {prob.difficulty}
+                </span>
+                <ChevronDownIcon
+                  size={10}
+                  style={{ color: "var(--text-dim)", flexShrink: 0 }}
+                />
               </button>
 
               {ddOpen && (
@@ -1030,9 +1079,13 @@ const runCode = async () => {
                         className={`pp-dd-row ${p.id === probId ? "on" : ""}`}
                         onClick={() => changeProblem(p.id)}
                       >
-                        <span className="pp-dd-idx">{String(i + 1).padStart(2, "0")}</span>
+                        <span className="pp-dd-idx">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
                         <span className="pp-dd-name">{p.title}</span>
-                        <span className={`dc ${diffClass(p.difficulty)}`}>{p.difficulty}</span>
+                        <span className={`dc ${diffClass(p.difficulty)}`}>
+                          {p.difficulty}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -1042,7 +1095,10 @@ const runCode = async () => {
 
             <button
               className="pp-arrow"
-              onClick={() => idx < allProblems.length - 1 && changeProblem(allProblems[idx + 1].id)}
+              onClick={() =>
+                idx < allProblems.length - 1 &&
+                changeProblem(allProblems[idx + 1].id)
+              }
               disabled={idx >= allProblems.length - 1}
               title="Next problem"
             >
@@ -1055,7 +1111,7 @@ const runCode = async () => {
             {/* Timer */}
             <button
               className={`pp-timer ${ticking ? "ticking" : ""}`}
-              onClick={() => setTicking(t => !t)}
+              onClick={() => setTicking((t) => !t)}
               title={ticking ? "Pause timer" : "Resume timer"}
             >
               <span className={`t-pip ${ticking ? "go" : "stop"}`} />
@@ -1070,10 +1126,15 @@ const runCode = async () => {
 
             {/* Run */}
             <button className="pp-run" onClick={runCode} disabled={running}>
-              {running
-                ? <><Loader2Icon size={12} className="spin" /> Running</>
-                : <><PlayIcon size={12} /> Run Code</>
-              }
+              {running ? (
+                <>
+                  <Loader2Icon size={12} className="spin" /> Running
+                </>
+              ) : (
+                <>
+                  <PlayIcon size={12} /> Run Code
+                </>
+              )}
             </button>
 
             <UserButton afterSignOutUrl="/" />
@@ -1082,8 +1143,10 @@ const runCode = async () => {
 
         {/* ══ BODY — horizontal resizable split ══ */}
         <div className="pp-body">
-          <PanelGroup direction="horizontal" style={{ height: "100%", gap: "0" }}>
-
+          <PanelGroup
+            direction="horizontal"
+            style={{ height: "100%", gap: "0" }}
+          >
             {/* ── LEFT PANEL — problem description ── */}
             <Panel defaultSize={38} minSize={28} maxSize={55}>
               <div className="gc" style={{ height: "100%" }}>
@@ -1102,8 +1165,12 @@ const runCode = async () => {
                     <BarChart3Icon size={11} /> Stats
                   </div>
                   <div className="gc-head-r">
-                    <span className={`dc ${diffClass(prob.difficulty)}`}>{prob.difficulty}</span>
-                    <span className="gc-meta">{idx + 1} / {allProblems.length}</span>
+                    <span className={`dc ${diffClass(prob.difficulty)}`}>
+                      {prob.difficulty}
+                    </span>
+                    <span className="gc-meta">
+                      {idx + 1} / {allProblems.length}
+                    </span>
                   </div>
                 </div>
 
@@ -1125,7 +1192,6 @@ const runCode = async () => {
             {/* ── RIGHT PANEL — editor + output stacked ── */}
             <Panel minSize={38}>
               <PanelGroup direction="vertical" style={{ height: "100%" }}>
-
                 {/* Editor */}
                 <Panel defaultSize={64} minSize={35}>
                   <div className="gc" style={{ height: "100%" }}>
@@ -1146,20 +1212,26 @@ const runCode = async () => {
                           {lang}
                         </div>
                         <span className="kbhint">⌘ ↵</span>
-                        <select className="gc-lang-sel" value={lang} onChange={changeLang}>
-                          {Object.keys(prob.starterCode).map(l => (
-                            <option key={l} value={l}>{l}</option>
+                        <select
+                          className="gc-lang-sel"
+                          value={lang}
+                          onChange={changeLang}
+                        >
+                          {Object.keys(prob.starterCode).map((l) => (
+                            <option key={l} value={l}>
+                              {l}
+                            </option>
                           ))}
                         </select>
                       </div>
                     </div>
                     <div className="gc-body">
                       <CodeEditorPanel
-  selectedLanguage={LANGUAGE_CONFIG[lang].monacoLang}
-  code={code}
-  isRunning={running}
-  onCodeChange={setCode}
-/>
+                        selectedLanguage={LANGUAGE_CONFIG[lang].monacoLang}
+                        code={code}
+                        isRunning={running}
+                        onCodeChange={setCode}
+                      />
                     </div>
                   </div>
                 </Panel>
@@ -1176,13 +1248,10 @@ const runCode = async () => {
                     </div>
                   </div>
                 </Panel>
-
               </PanelGroup>
             </Panel>
-
           </PanelGroup>
         </div>
-
       </div>
     </>
   );
