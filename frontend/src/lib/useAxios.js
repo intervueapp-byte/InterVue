@@ -1,4 +1,3 @@
-// useAxios.js
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 
@@ -6,7 +5,8 @@ export const useAxios = () => {
   const { getToken } = useAuth();
 
   const instance = axios.create({
-    baseURL: "http://localhost:3000/api",
+    baseURL: import.meta.env.VITE_API_URL, // ✅ FIXED
+    withCredentials: true,
   });
 
   instance.interceptors.request.use(async (config) => {

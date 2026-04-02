@@ -1,6 +1,8 @@
 export async function executeCode(language, code) {
   try {
-    const response = await fetch("http://localhost:3000/api/code/execute", {
+    const API_URL = import.meta.env.VITE_API_URL;
+
+    const response = await fetch(`${API_URL}/code/execute`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -12,18 +14,27 @@ export async function executeCode(language, code) {
       }),
     });
 
+    if (!response.ok) {
+      throw new Error("Request failed");
+    }
+
     const data = await response.json();
 
     if (!data.success) {
-      return { success: false, error: data.error };
+      return {
+        success: false,
+        error: data.error || "Execution failed",
+      };
     }
 
     return {
       success: true,
-      output: data.output,
+      output: data.output || "No output",
     };
-
   } catch (err) {
-    return { success: false, error: err.message };
+    return {
+      success: false,
+      error: err.message || "Unknown error",
+    };
   }
 }
