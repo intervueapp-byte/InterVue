@@ -10,6 +10,7 @@ import { inngest, functions } from "./lib/inngest.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import sessionRoutes from "./routes/sessionRoute.js";
 import codeRoutes from "./routes/codeRoutes.js";
+
 const app = express();
 
 app.use(express.json());
@@ -24,16 +25,9 @@ credentials: true,
 })
 );
 
-app.use("/api/inngest", serve({ client: inngest, functions }));
-
 app.use(clerkMiddleware());
 
-app.use((req, res, next) => {
-  if (req.path.startsWith("/api/inngest")) {
-    return next(); 
-  }
-  return clerkMiddleware()(req, res, next);
-});
+app.use("/api/inngest", serve({ client: inngest, functions }));
 
 app.get("/health", (req, res) => {
 res.status(200).json({ msg: "API is running" });
@@ -42,6 +36,7 @@ res.status(200).json({ msg: "API is running" });
 app.use("/api/chat", chatRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/code", codeRoutes);
+
 app.use((err, req, res, next) => {
 console.error("Server Error:", err);
 res.status(500).json({
@@ -56,13 +51,14 @@ const startServer = async () => {
 try {
 await connectDB();
 console.log("MongoDB connected");
-
 app.listen(PORT, () => {
-console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
+
 } catch (error) {
 console.error("Failed to start server:", error);
 process.exit(1);
 }
 };
-startServer()
+
+startServer();

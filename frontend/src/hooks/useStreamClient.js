@@ -1,99 +1,89 @@
 import { useState, useEffect } from "react";
-import { StreamChat } from "stream-chat";
-import { useUser } from "@clerk/clerk-react";
-import toast from "react-hot-toast";
-import { initializeStreamClient, disconnectStreamClient } from "../lib/stream";
-import { sessionApi } from "../api/sessions";
-import { useAuth } from "@clerk/clerk-react";
-function useStreamClient(session, loadingSession, isHost, isParticipant) {
+import { useUser, useAuth } from "@clerk/clerk-react";
+import { StreamVideoClient } from "@stream-io/video-react-sdk";
+
+let clientInstance = null;
+
+function useStreamClient(session, loadingSession) {
   const { user } = useUser();
+  const { getToken } = useAuth();
 
   const [streamClient, setStreamClient] = useState(null);
   const [call, setCall] = useState(null);
-  const [chatClient, setChatClient] = useState(null);
-  const [channel, setChannel] = useState(null);
   const [isInitializingCall, setIsInitializingCall] = useState(true);
-const { getToken } = useAuth();
+
   useEffect(() => {
     let videoCall = null;
-    let chatClientInstance = null;
 
-    const initCall = async () => {
-      if (!session?.callId) return;
-      if (!user) return;
-      if (!isHost && !isParticipant) return;
-      if (session.status === "completed") return;
-
+    const init = async () => {
       try {
-const clerkToken = await getToken();
+        if (!session || loadingSession) return;
+        if (!session.callId) return;
+        if (!user) return;
 
-const { token, apiKey } = await sessionApi.getStreamToken(clerkToken);
+        const clerkToken = await getToken();
 
-        const client = await initializeStreamClient(
+        const res = await fetch(
+          "https://intervue-t8xv.onrender.com/api/chat/token",
           {
+            headers: {
+              Authorization: `Bearer ${clerkToken}`,
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error("Token fetch failed");
+
+        const { token, apiKey } = await res.json();
+
+        clientInstance = new StreamVideoClient({
+          apiKey,
+          user: {
             id: user.id,
             name: user.fullName || "User",
             image: user.imageUrl,
           },
-          token
-        );
+          token,
+        });
 
-        setStreamClient(client);
+        setStreamClient(clientInstance);
 
-        videoCall = client.call("default", session.callId);
-        await videoCall.join({ create: true });
+        videoCall = clientInstance.call("default", session.callId);
+        await videoCall.join({
+  create: true,
+  audio: true,
+  video: true,
+});
+
+await videoCall.microphone.enable();
+await videoCall.camera.enable();
+
+await videoCall.startPublishing();
+
+
         setCall(videoCall);
-
-        chatClientInstance = StreamChat.getInstance(apiKey);
-
-        await chatClientInstance.connectUser(
-          {
-            id: user.id,
-            name: user.fullName || "User",
-            image: user.imageUrl,
-          },
-          token
-        );
-
-        setChatClient(chatClientInstanceLocal);
-
-        const chatChannel = chatClientInstanceLocal.channel(
-          "messaging",
-          session.callId
-        );
-        await chatChannel.watch();
-        setChannel(chatChannel);
-
-      } catch (error) {
-        console.error("Error init call", error);
-        toast.error("Failed to join video call");
+      } catch (err) {
+        console.error("VIDEO ERROR:", err);
       } finally {
         setIsInitializingCall(false);
       }
     };
 
-    if (session && !loadingSession) {
-      initCall();
-    }
+    init();
 
-return () => {
-  (async () => {
-    try {
-      if (videoCall) await videoCall.leave();
-      if (chatClientInstance) await chatClientInstance.disconnectUser();
-      if (streamClient) await disconnectStreamClient();
-    } catch (error) {
-      console.error("Cleanup error:", error);
-    }
-  })();
-};
-}, [session, loadingSession, isHost, isParticipant, user, getToken]);
+    return () => {
+      (async () => {
+        try {
+          if (videoCall) await videoCall.leave();
+          if (clientInstance) await clientInstance.disconnectUser();
+        } catch {}
+      })();
+    };
+  }, [session, loadingSession, user]);
 
   return {
     streamClient,
     call,
-    chatClient,
-    channel,
     isInitializingCall,
   };
 }

@@ -3,128 +3,140 @@ import User from "../models/User.js";
 import { streamClient } from "../lib/stream.js";
 
 export const createSession = async (req, res) => {
-  try {
-    const userId = req.auth.userId;
+try {
+const userId = req.auth.userId;
 
-    const user = await User.findOne({ clerkId: userId });
-    if (!user) return res.status(404).json({ message: "User not found" });
+```
+const user = await User.findOne({ clerkId: userId });
+if (!user) return res.status(404).json({ message: "User not found" });
 
-    const { problem, difficulty } = req.body;
+const { problem, difficulty } = req.body;
+const callId = userId + "-" + Date.now();
 
-    const safeDifficulty = difficulty || "easy";
+await streamClient.upsertUser({
+  id: userId,
+  role: "user",
+});
 
-const callId = `${userId}-${Date.now()}`;
+const call = streamClient.video.call("default", callId);
 
-    try {
-      const call = streamClient.video.call("default", callId);
+await call.create({
+  data: {
+    created_by_id: userId,
+    members: [{ user_id: userId }],
+  },
+});
 
-      await call.create({
-        data: {
-          created_by_id: userId,
-        },
-      });
-    } catch (err) {
-      console.log("⚠️ STREAM ERROR:", err.message);
-    }
+const session = await Session.create({
+  problem,
+  difficulty: difficulty || "easy",
+  host: user._id,
+  callId,
+  status: "active",
+});
 
-    const session = await Session.create({
-      problem,
-      difficulty: safeDifficulty,
-      host: user._id,
-      callId,
-      status: "active",
-    });
+res.status(201).json(session);
+```
 
-    try {
-  await streamClient.channel("messaging", "global").sendEvent({
-    type: "session.created",
-    sessionId: session._id.toString(),
-  });
-} catch (err) {
-  console.log("⚠️ STREAM EVENT ERROR:", err.message);
+} catch (error) {
+res.status(500).json({ message: "Failed to create session" });
 }
-
-    res.status(201).json(session);
-  } catch (error) {
-    console.error("🔥 CREATE SESSION ERROR:", error);
-    res.status(500).json({ message: "Failed to create session" });
-  }
-};
-
-export const getActiveSessions = async (req, res) => {
-  try {
-    const sessions = await Session.find({ status: "active" })
-      .populate("host", "name profileImage")
-      .sort({ createdAt: -1 });
-
-    res.json(sessions);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch active sessions" });
-  }
-};
-
-export const getMyRecentSessions = async (req, res) => {
-  try {
-    const userId = req.auth.userId;
-
-    const user = await User.findOne({ clerkId: userId });
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    const sessions = await Session.find({ host: user._id })
-      .sort({ createdAt: -1 })
-      .limit(10);
-
-    res.json(sessions);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch sessions" });
-  }
-};
-
-export const getSessionById = async (req, res) => {
-  try {
-    const session = await Session.findById(req.params.id).populate(
-      "host",
-      "name profileImage"
-    );
-
-    if (!session) return res.status(404).json({ message: "Session not found" });
-
-    res.json(session);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching session" });
-  }
 };
 
 export const joinSession = async (req, res) => {
-  try {
-    const userId = req.auth.userId;
-    const session = await Session.findById(req.params.id);
+try {
+const userId = req.auth.userId;
 
-    if (!session) return res.status(404).json({ message: "Session not found" });
+```
+const session = await Session.findById(req.params.id);
+if (!session) return res.status(404).json({ message: "Session not found" });
 
-    const token = streamClient.createToken(userId);
+await streamClient.upsertUser({
+  id: userId,
+  role: "user",
+});
 
-    res.json({
-      callId: session.callId,
-      token,
-      apiKey: process.env.STREAM_API_KEY,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to join session" });
-  }
+const token = streamClient.createToken(userId);
+
+res.json({
+  callId: session.callId,
+  token,
+  apiKey: process.env.STREAM_API_KEY,
+});
+```
+
+} catch (error) {
+res.status(500).json({ message: "Failed to join session" });
+}
+};
+
+export const getActiveSessions = async (req, res) => {
+try {
+const sessions = await Session.find({ status: "active" })
+.populate("host", "name profileImage")
+.sort({ createdAt: -1 });
+
+```
+res.json(sessions);
+```
+
+} catch (error) {
+res.status(500).json({ message: "Failed to fetch active sessions" });
+}
+};
+
+export const getMyRecentSessions = async (req, res) => {
+try {
+const userId = req.auth.userId;
+
+```
+const user = await User.findOne({ clerkId: userId });
+if (!user) return res.status(404).json({ message: "User not found" });
+
+const sessions = await Session.find({ host: user._id })
+  .sort({ createdAt: -1 })
+  .limit(10);
+
+res.json(sessions);
+```
+
+} catch (error) {
+res.status(500).json({ message: "Failed to fetch sessions" });
+}
+};
+
+export const getSessionById = async (req, res) => {
+try {
+const session = await Session.findById(req.params.id).populate(
+"host",
+"name profileImage"
+);
+
+```
+if (!session) return res.status(404).json({ message: "Session not found" });
+
+res.json(session);
+```
+
+} catch (error) {
+res.status(500).json({ message: "Error fetching session" });
+}
 };
 
 export const endSession = async (req, res) => {
-  try {
-    const session = await Session.findById(req.params.id);
+try {
+const session = await Session.findById(req.params.id);
 
-    if (!session) return res.status(404).json({ message: "Session not found" });
+```
+if (!session) return res.status(404).json({ message: "Session not found" });
 
-    session.status = "ended";
-    await session.save();
+session.status = "ended";
+await session.save();
 
-    res.json({ message: "Session ended" });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to end session" });
-  }
+res.json({ message: "Session ended" });
+```
+
+} catch (error) {
+res.status(500).json({ message: "Failed to end session" });
+}
 };

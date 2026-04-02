@@ -34,7 +34,7 @@ import StatsCards from "../components/StatsCards";
 import ActiveSessions from "../components/ActiveSessions";
 import RecentSessions from "../components/RecentSessions";
 import CreateSessionModal from "../components/CreateSessionModal";
-import { StreamChat } from "stream-chat";
+
 import { useQueryClient } from "@tanstack/react-query";
 import { sessionApi } from "../api/sessions";
 
@@ -676,55 +676,7 @@ useEffect(() => {
   loadToken();
 }, [isSignedIn]);
 
-useEffect(() => {
-if (!user || !token) return;
 
-  let client;
-  let channel;
-
-  const initRealtime = async () => {
- try {
-const {
-  token: streamToken,
-  apiKey,
-  userId,
-  userName,
-  userImage,
-} = await sessionApi.getStreamToken(token);
-
-  client = StreamChat.getInstance(apiKey);  
-
-  await client.connectUser(
-    {
-      id: userId,
-      name: userName || "User",
-      image: userImage,
-    },
-    streamToken
-  );
-
-  channel = client.channel("messaging", "global");
-  await channel.watch();
-
-  channel.on((event) => {
-    if (event.type === "session.created") {
-      console.log("🔥 REALTIME EVENT:", event);
-      queryClient.invalidateQueries(["activeSessions", token]);
-    }
-  });
-
-} catch (err) {
-  console.error("Realtime error:", err);
-}
-  };
-
-  initRealtime();
-
-  return () => {
-    if (channel) channel.off("session.created");
-    if (client) client.disconnectUser();
-  };
-}, [user, token]);
   // ── original handler — unchanged ──
 const handleCreateRoom = () => {
   if (!roomConfig.problem || !roomConfig.difficulty) return;

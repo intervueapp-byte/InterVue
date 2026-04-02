@@ -1,26 +1,18 @@
-import { StreamClient } from "@stream-io/node-sdk";
+import { streamClient } from "../lib/stream.js";
 
-export async function getStreamToken(req, res) {
-  try {
-    const userId = req.user.clerkId;
+export const getStreamToken = async (req, res) => {
+try {
+const userId = req.auth.userId;
 
-    const streamClient = new StreamClient(
-      process.env.STREAM_API_KEY,
-      process.env.STREAM_API_SECRET
-    );
+const token = streamClient.createToken(userId);
 
-    const token = streamClient.createToken(userId);
-
-res.status(200).json({
+res.json({
   token,
   apiKey: process.env.STREAM_API_KEY,
-  userId,
-  userName: req.user.name,
-  userImage: req.user.profileImage,
 });
 
-  } catch (error) {
-    console.log("Error in getStreamToken controller:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
+
+} catch (error) {
+res.status(500).json({ message: "Failed to get token" });
 }
+};
