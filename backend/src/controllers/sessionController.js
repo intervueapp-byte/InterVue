@@ -1,6 +1,6 @@
 import Session from "../models/Session.js";
 import User from "../models/User.js";
-import { streamClient, createStreamChannel } from "../lib/stream.js";
+import { streamClient } from "../lib/stream.js";
 
 export const createSession = async (req, res) => {
   try {
@@ -13,7 +13,7 @@ export const createSession = async (req, res) => {
 
     const safeDifficulty = difficulty || "easy";
 
-    const callId = `${userId}-${Date.now()}`;
+const callId = `${userId}-${Date.now()}`;
 
     try {
       const call = streamClient.video.call("default", callId);
@@ -24,13 +24,7 @@ export const createSession = async (req, res) => {
         },
       });
     } catch (err) {
-      console.log("STREAM ERROR:", err.message);
-    }
-
-    try {
-      await createStreamChannel(callId, [userId]);
-    } catch (err) {
-      console.log("CHANNEL ERROR:", err.message);
+      console.log("⚠️ STREAM ERROR:", err.message);
     }
 
     const session = await Session.create({
@@ -42,17 +36,17 @@ export const createSession = async (req, res) => {
     });
 
     try {
-      await streamClient.channel("messaging", "global").sendEvent({
-        type: "session.created",
-        sessionId: session._id.toString(),
-      });
-    } catch (err) {
-      console.log("STREAM EVENT ERROR:", err.message);
-    }
+  await streamClient.channel("messaging", "global").sendEvent({
+    type: "session.created",
+    sessionId: session._id.toString(),
+  });
+} catch (err) {
+  console.log("⚠️ STREAM EVENT ERROR:", err.message);
+}
 
     res.status(201).json(session);
   } catch (error) {
-    console.error("CREATE SESSION ERROR:", error);
+    console.error("🔥 CREATE SESSION ERROR:", error);
     res.status(500).json({ message: "Failed to create session" });
   }
 };
