@@ -642,10 +642,18 @@ const [token, setToken] = useState(null);
   const [now, setNow] = useState(new Date());
 const queryClient = useQueryClient();
 
-  console.log("SENDING DATA:", {
-  problem: roomConfig.problem,
-  difficulty: roomConfig.difficulty,
-});
+const handleSubmit = () => {
+  if (!problem || !difficulty) {
+    toast.error("Fill all fields");
+    return;
+  }
+
+  const data = { problem, difficulty };
+
+  console.log("🚀 Creating session:", data);
+
+  createSessionMutation.mutate(data);
+};
 const createSessionMutation = useCreateSession(token);
 
 const { data: activeSessionsData, isLoading: loadingActiveSessions } =
@@ -664,17 +672,7 @@ const activeSessions = activeSessionsData || [];
     return () => clearInterval(t);
   }, []);
 
-useEffect(() => {
-  const loadToken = async () => {
-    if (!isSignedIn) return;
 
-    const t = await getToken();
-    console.log("TOKEN:", t); // must print
-    setToken(t);
-  };
-
-  loadToken();
-}, [isSignedIn]);
 
 useEffect(() => {
 if (!user || !token) return;
@@ -682,41 +680,7 @@ if (!user || !token) return;
   let client;
   let channel;
 
-  const initRealtime = async () => {
- try {
-const {
-  token: streamToken,
-  apiKey,
-  userId,
-  userName,
-  userImage,
-} = await sessionApi.getStreamToken(token);
 
-  client = StreamChat.getInstance(apiKey);  
-
-  await client.connectUser(
-    {
-      id: userId,
-      name: userName || "User",
-      image: userImage,
-    },
-    streamToken
-  );
-
-  channel = client.channel("messaging", "global");
-  await channel.watch();
-
-  channel.on((event) => {
-    if (event.type === "session.created") {
-      console.log("🔥 REALTIME EVENT:", event);
-      queryClient.invalidateQueries(["activeSessions", token]);
-    }
-  });
-
-} catch (err) {
-  console.error("Realtime error:", err);
-}
-  };
 
   initRealtime();
 

@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
 import { StreamChat } from "stream-chat";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
 import { initializeStreamClient, disconnectStreamClient } from "../lib/stream";
 import { sessionApi } from "../api/sessions";
-import { useAuth } from "@clerk/clerk-react";
+
 function useStreamClient(session, loadingSession, isHost, isParticipant) {
   const { user } = useUser();
+  const { getToken } = useAuth();
 
   const [streamClient, setStreamClient] = useState(null);
   const [call, setCall] = useState(null);
   const [chatClient, setChatClient] = useState(null);
   const [channel, setChannel] = useState(null);
   const [isInitializingCall, setIsInitializingCall] = useState(true);
-const { getToken } = useAuth();
+
   useEffect(() => {
     let videoCall = null;
     let chatClientInstance = null;
@@ -25,18 +26,18 @@ const { getToken } = useAuth();
       if (session.status === "completed") return;
 
       try {
-const clerkToken = await getToken();
+        const clerkToken = await getToken();
+        const { token, apiKey } = await sessionApi.getStreamToken(clerkToken);
 
-const { token, apiKey } = await sessionApi.getStreamToken(clerkToken);
-
-        const client = await initializeStreamClient(
-          {
+        const client = await initializeStreamClient({
+          apiKey,
+          user: {
             id: user.id,
             name: user.fullName || "User",
             image: user.imageUrl,
           },
-          token
-        );
+          token,
+        });
 
         setStreamClient(client);
 
@@ -55,15 +56,18 @@ const { token, apiKey } = await sessionApi.getStreamToken(clerkToken);
           token
         );
 
-        setChatClient(chatClientInstanceLocal);
+        setChatClient(chatClientInstance);
 
-        const chatChannel = chatClientInstanceLocal.channel(
+        const chatChannel = chatClientInstance.channel(
           "messaging",
-          session.callId
+          session.callId,
+          {
+            members: [user.id],
+          }
         );
+
         await chatChannel.watch();
         setChannel(chatChannel);
-
       } catch (error) {
         console.error("Error init call", error);
         toast.error("Failed to join video call");
@@ -76,18 +80,18 @@ const { token, apiKey } = await sessionApi.getStreamToken(clerkToken);
       initCall();
     }
 
-return () => {
-  (async () => {
-    try {
-      if (videoCall) await videoCall.leave();
-      if (chatClientInstance) await chatClientInstance.disconnectUser();
-      if (streamClient) await disconnectStreamClient();
-    } catch (error) {
-      console.error("Cleanup error:", error);
-    }
-  })();
-};
-}, [session, loadingSession, isHost, isParticipant, user, getToken]);
+    return () => {
+      (async () => {
+        try {
+          if (videoCall) await videoCall.leave();
+          if (chatClientInstance) await chatClientInstance.disconnectUser();
+          if (streamClient) await disconnectStreamClient();
+        } catch (error) {
+          console.error("Cleanup error:", error);
+        }
+      })();
+    };
+  }, [session, loadingSession, isHost, isParticipant, user, getToken]);
 
   return {
     streamClient,
