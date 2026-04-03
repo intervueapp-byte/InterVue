@@ -1,9 +1,3 @@
-/* ══════════════════════════════════════════════════════════════════
-   ProblemPage.jsx  —  Full Redesign for InterVue
-   Design: Editorial dark workspace — Linear / Vercel aesthetic
-   Fonts: Fraunces (brand) + Plus Jakarta Sans (UI) + JetBrains Mono (code/data)
-══════════════════════════════════════════════════════════════════ */
-
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Link } from "react-router";
@@ -38,9 +32,6 @@ import {
   PauseIcon,
 } from "lucide-react";
 
-/* ══════════════════════════════════════════════════════════════════
-   GLOBAL CSS
-══════════════════════════════════════════════════════════════════ */
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
@@ -89,7 +80,6 @@ const css = `
     font-size: 14px;
   }
 
-  /* Subtle noise grain */
   body::after {
     content: '';
     position: fixed; inset: 0; pointer-events: none; z-index: 9999;
@@ -97,16 +87,12 @@ const css = `
     opacity: 0.018;
   }
 
-  /* ═══════════════════════════════
-     ROOT + AMBIENT
-  ═══════════════════════════════ */
   .pp-root {
     display: flex; flex-direction: column;
     height: 100vh; background: var(--ink);
     overflow: hidden; position: relative;
   }
 
-  /* Radial glow — top center */
   .pp-root::before {
     content: '';
     position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
@@ -118,9 +104,6 @@ const css = `
     pointer-events: none; z-index: 0;
   }
 
-  /* ═══════════════════════════════
-     TOPBAR
-  ═══════════════════════════════ */
   .pp-topbar {
     position: relative; z-index: 200; flex-shrink: 0;
     height: 52px;
@@ -131,7 +114,6 @@ const css = `
     border-bottom: 1px solid var(--border);
   }
 
-  /* Gold shimmer at very top */
   .pp-topbar::before {
     content: '';
     position: absolute; top: 0; left: 0; right: 0; height: 1px;
@@ -142,18 +124,17 @@ const css = `
     );
   }
 
-  /* Topbar sections */
   .tb-left   { display: flex; align-items: center; gap: 0.7rem; flex-shrink: 0; }
   .tb-center { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0 1rem; min-width: 0; }
   .tb-right  { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 
   .tb-sep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
 
-  /* Logo */
   .pp-logo {
     display: flex; align-items: center; gap: 0.5rem;
     text-decoration: none; flex-shrink: 0;
   }
+
   .pp-gem {
     width: 28px; height: 28px; border-radius: 8px;
     background: linear-gradient(145deg, var(--gold-lt), var(--gold-dk));
@@ -169,7 +150,6 @@ const css = `
   }
   .pp-brand em { font-style: normal; color: var(--gold); }
 
-  /* Back button */
   .pp-back {
     display: inline-flex; align-items: center; gap: 0.28rem;
     padding: 0.25rem 0.6rem; border-radius: 6px;
@@ -183,7 +163,6 @@ const css = `
     background: var(--card2);
   }
 
-  /* Problem picker */
   .pp-picker { position: relative; flex-shrink: 0; }
   .pp-picker-btn {
     display: inline-flex; align-items: center; gap: 0.45rem;
@@ -196,7 +175,6 @@ const css = `
   .pp-picker-btn:hover { border-color: var(--border-h); background: var(--card); }
   .pp-picker-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  /* Arrow nav */
   .pp-arrow {
     width: 26px; height: 26px; border-radius: 6px;
     background: var(--card2); border: 1px solid var(--border);
@@ -207,7 +185,6 @@ const css = `
   .pp-arrow:hover:not(:disabled) { border-color: var(--border-h); color: var(--text); }
   .pp-arrow:disabled { opacity: 0.25; cursor: not-allowed; }
 
-  /* Dropdown */
   .pp-dropdown {
     position: absolute; top: calc(100% + 6px);
     left: 50%; transform: translateX(-50%);
@@ -244,7 +221,6 @@ const css = `
   .pp-dd-name { flex: 1; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pp-dd-row.on .pp-dd-name { color: var(--gold-lt); }
 
-  /* Difficulty chips (shared) */
   .dc {
     display: inline-flex; align-items: center;
     padding: 0.1rem 0.48rem; border-radius: 100px;
@@ -256,7 +232,6 @@ const css = `
   .dc-medium { background: var(--amber-dim); color: var(--amber);  border-color: var(--amber-border); }
   .dc-hard   { background: var(--red-dim);   color: var(--red);    border-color: var(--red-border); }
 
-  /* Timer */
   .pp-timer {
     display: inline-flex; align-items: center; gap: 0.35rem;
     padding: 0.24rem 0.65rem; border-radius: 6px;
@@ -274,7 +249,6 @@ const css = `
   .t-pip.stop { background: var(--amber); }
   @keyframes tpip { 0%,100%{opacity:1}50%{opacity:0.2} }
 
-  /* Status badge */
   .pp-status {
     display: inline-flex; align-items: center; gap: 0.35rem;
     padding: 0.24rem 0.68rem; border-radius: 6px;
@@ -287,7 +261,6 @@ const css = `
   .ps-passed  { background: var(--green-dim); border-color: var(--green-border); color: var(--green); }
   .ps-failed  { background: var(--red-dim);   border-color: var(--red-border);   color: var(--red); }
 
-  /* Run button */
   .pp-run {
     display: inline-flex; align-items: center; gap: 0.4rem;
     padding: 0.42rem 1.1rem;
@@ -316,9 +289,6 @@ const css = `
   .spin { animation: rot 0.7s linear infinite; }
   @keyframes rot { to { transform: rotate(360deg); } }
 
-  /* ═══════════════════════════════
-     BODY + PANEL LAYOUT
-  ═══════════════════════════════ */
   .pp-body {
     flex: 1; min-height: 0;
     position: relative; z-index: 1;
@@ -326,9 +296,6 @@ const css = `
     display: flex; gap: 0.5rem;
   }
 
-  /* ═══════════════════════════════
-     GLASS CARD — shared panel shell
-  ═══════════════════════════════ */
   .gc {
     background: rgba(11,11,20,0.75);
     border: 1px solid var(--border);
@@ -344,7 +311,6 @@ const css = `
   }
   .gc:hover { border-color: rgba(255,255,255,0.09); }
 
-  /* Inset top shimmer */
   .gc::before {
     content: '';
     position: absolute; top: 0; left: 0; right: 0; height: 1px;
@@ -352,7 +318,6 @@ const css = `
     pointer-events: none; z-index: 1;
   }
 
-  /* Card header */
   .gc-head {
     display: flex; align-items: center;
     height: 40px; flex-shrink: 0;
@@ -360,7 +325,6 @@ const css = `
     border-bottom: 1px solid var(--border);
   }
 
-  /* Tab style */
   .gc-tab {
     display: inline-flex; align-items: center; gap: 0.38rem;
     padding: 0 0.9rem; height: 100%;
@@ -378,7 +342,6 @@ const css = `
     border-bottom-color: var(--gold);
   }
 
-  /* Active label (non-clickable) */
   .gc-label {
     display: inline-flex; align-items: center; gap: 0.38rem;
     padding: 0 0.9rem; height: 100%;
@@ -401,7 +364,6 @@ const css = `
     font-size: 0.6rem; color: var(--text-dim);
   }
 
-  /* Language selector */
   .gc-lang-sel {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.08);
@@ -425,7 +387,6 @@ const css = `
   .gc-lang-sel:focus { border-color: var(--border-gold); color: var(--text); }
   .gc-lang-sel option { background: #111120; }
 
-  /* Lang pip */
   .lang-badge {
     display: inline-flex; align-items: center; gap: 0.32rem;
     font-size: 0.65rem; font-weight: 600; color: var(--text-sub);
@@ -434,22 +395,16 @@ const css = `
   }
   .l-pip { width: 6px; height: 6px; border-radius: 50%; }
 
-  /* Keyboard hint */
   .kbhint {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.58rem; color: var(--text-dim);
     background: var(--card2); border: 1px solid var(--border);
     border-radius: 4px; padding: 0.06rem 0.28rem;
   }
-
-  /* Panel body */
   .gc-body {
     flex: 1; min-height: 0; overflow: hidden;
   }
 
-  /* ═══════════════════════════════
-     OUTPUT STRIPE
-  ═══════════════════════════════ */
   .out-stripe {
     display: flex; align-items: center; gap: 0.5rem;
     height: 36px; flex-shrink: 0;
@@ -486,10 +441,6 @@ const css = `
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.62rem; color: var(--text-dim);
   }
-
-  /* ═══════════════════════════════
-     RESIZE HANDLES
-  ═══════════════════════════════ */
   .rh-v {
     width: 7px !important; cursor: col-resize;
     background: transparent !important;
@@ -523,9 +474,6 @@ const css = `
     box-shadow: 0 0 8px var(--gold-glow);
   }
 
-  /* ═══════════════════════════════
-     RESPONSIVE
-  ═══════════════════════════════ */
   @media (max-width: 860px) {
     .tb-center { display: none; }
     .pp-timer  { display: none; }
@@ -534,17 +482,10 @@ const css = `
     .pp-status { display: none; }
   }
 
-  /* ═══════════════════════════════════════════════════
-   REFINEMENT PASS — noise reduction + hierarchy
-═══════════════════════════════════════════════════ */
-
-/* 1. Kill the grain texture entirely */
 body::after { display: none; }
 
-/* 2. Remove the ambient radial glow — too much atmosphere */
 .pp-root::before { display: none; }
 
-/* 3. Topbar — flatten it, one clean line */
 .pp-topbar {
   background: #08080F;
   backdrop-filter: none;
@@ -552,7 +493,6 @@ body::after { display: none; }
   height: 48px;
 }
 
-/* Gold shimmer at top — pull it way back */
 .pp-topbar::before {
   background: linear-gradient(
     90deg,
@@ -564,13 +504,11 @@ body::after { display: none; }
   opacity: 0.6;
 }
 
-/* Logo gem — no glow, just the gradient */
 .pp-gem {
   box-shadow: none;
   border-radius: 7px;
 }
 
-/* 4. Glass cards — quieter, less layered */
 .gc {
   background: #0C0C18;
   border: 1px solid rgba(255,255,255,0.07);
@@ -579,17 +517,14 @@ body::after { display: none; }
 }
 .gc:hover { border-color: rgba(255,255,255,0.1); }
 
-/* Remove inset shimmer line — one less layer */
 .gc::before { display: none; }
 
-/* 5. Card headers — simpler, darker */
 .gc-head {
   background: rgba(6,6,14,0.9);
   border-bottom: 1px solid rgba(255,255,255,0.06);
   height: 38px;
 }
 
-/* Active tab — subtler gold underline */
 .gc-tab.on {
   color: rgba(200,164,90,0.9);
   background: transparent;
@@ -601,21 +536,18 @@ body::after { display: none; }
   border-bottom-color: rgba(200,164,90,0.45);
 }
 
-/* 6. Timer — remove ticking background flash */
 .pp-timer.ticking {
   color: rgba(200,164,90,0.8);
   background: transparent;
   border-color: rgba(200,164,90,0.22);
 }
 
-/* Pulsing pip — much calmer */
 .t-pip.go {
   box-shadow: none;
   animation: tpip 3s ease-in-out infinite;
 }
 @keyframes tpip { 0%,100%{opacity:1} 50%{opacity:0.35} }
 
-/* 7. Run button — less glow */
 .pp-run {
   box-shadow: none;
   border-radius: 7px;
@@ -627,36 +559,29 @@ body::after { display: none; }
 }
 .pp-run::after { display: none; }
 
-/* 8. Status badge — flatten */
 .ps-idle    { background: transparent; border-color: rgba(255,255,255,0.08); }
 .ps-running { background: transparent; border-color: rgba(200,164,90,0.2); }
 .ps-passed  { background: transparent; border-color: rgba(62,207,142,0.2); }
 .ps-failed  { background: transparent; border-color: rgba(248,113,113,0.2); }
 
-/* 9. Output panel — visually secondary */
-/* Smaller, quieter header */
 .out-stripe {
   height: 32px;
   font-size: 0.68rem;
   background: #08080F;
   border-bottom-color: rgba(255,255,255,0.05);
 }
-/* Remove colored gradient washes */
 .out-stripe.s-pass,
 .out-stripe.s-fail,
 .out-stripe.s-run { background: #08080F; }
-/* Keep only the border color as the signal */
 .out-stripe.s-pass { border-bottom-color: rgba(62,207,142,0.2); }
 .out-stripe.s-fail { border-bottom-color: rgba(248,113,113,0.2); }
 .out-stripe.s-run  { border-bottom-color: rgba(200,164,90,0.18); }
 
-/* Output icon — smaller, no border drama */
 .out-icon {
   width: 20px; height: 20px; border-radius: 5px;
   background: transparent; border: none;
 }
 
-/* 10. Resize handles — thinner, more subtle */
 .rh-v::after {
   width: 1px; height: 28px;
   background: rgba(255,255,255,0.08);
@@ -674,10 +599,8 @@ body::after { display: none; }
   width: 40px; box-shadow: none;
 }
 
-/* 11. Body background — single flat tone */
 .pp-body { background: #07070C; padding: 0.65rem 0.75rem; gap: 0.55rem; }
 
-/* 12. Lang badge + kb hint — quieter */
 .lang-badge {
   background: transparent; border-color: rgba(255,255,255,0.06);
   color: rgba(236,237,244,0.38);
@@ -687,7 +610,6 @@ body::after { display: none; }
   color: rgba(236,237,244,0.2);
 }
 
-/* 13. Dropdown — cleaner */
 .pp-dropdown {
   background: #0E0E1C;
   border-color: rgba(255,255,255,0.1);
@@ -697,33 +619,24 @@ body::after { display: none; }
 .pp-dd-row:hover { background: rgba(255,255,255,0.025); }
 .pp-dd-row.on    { background: rgba(200,164,90,0.06); }
 
-/* ═══════════════════════════════════════
-   FINAL POLISH — depth + focus
-═══════════════════════════════════════ */
-
-/* 1. EDITOR = PRIMARY FOCUS */
 .gc {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-/* Highlight editor panel slightly */
 .gc:has(.CodeMirror), 
 .gc:has(textarea) {
   border-color: rgba(200,164,90,0.18);
   box-shadow: 0 0 0 1px rgba(200,164,90,0.08);
 }
 
-/* Slight hover emphasis */
 .gc:hover {
   border-color: rgba(255,255,255,0.12);
 }
 
-/* 2. LEFT PANEL — add subtle section depth */
 .gc-body {
   padding-right: 4px;
 }
 
-/* softer inner scroll feel */
 .gc-body::-webkit-scrollbar {
   width: 4px;
 }
@@ -731,30 +644,25 @@ body::after { display: none; }
   background: rgba(255,255,255,0.06);
 }
 
-/* 3. RESIZE HANDLE — make it feel smoother */
 .rh-v::after,
 .rh-h::after {
   opacity: 0.5;
   transition: all 0.2s ease;
 }
 
-/* 4. TOPBAR — spacing refinement */
 .pp-topbar {
   padding: 0 1.25rem;
 }
 
-/* give breathing between groups */
 .tb-left,
 .tb-right {
   gap: 0.75rem;
 }
 
-/* center section tighter */
 .tb-center {
   gap: 0.3rem;
 }
 
-/* 5. BUTTON INTERACTIONS — more premium feel */
 .pp-arrow,
 .pp-picker-btn,
 .pp-back {
@@ -767,37 +675,29 @@ body::after { display: none; }
   background: rgba(255,255,255,0.025);
 }
 
-/* 6. EDITOR PANEL HEADER — clearer hierarchy */
 .gc-head {
   font-size: 0.72rem;
 }
 
-/* editor label stronger */
 .gc-label {
   font-weight: 800;
   letter-spacing: 0.08em;
 }
 
-/* 7. OUTPUT PANEL — even more secondary */
 .gc:has(.out-stripe) {
   opacity: 0.95;
 }
 
-/* 8. TEXT SHARPNESS */
 body {
   letter-spacing: -0.01em;
 }
 
-/* 9. SMALL MICRO-DETAIL — makes UI feel polished */
 .gc,
 .pp-topbar {
   backdrop-filter: blur(0px);
 }
 `;
 
-/* ══════════════════════════════════════════════════════════════════
-   HELPERS
-══════════════════════════════════════════════════════════════════ */
 const LANG_COLORS = {
   javascript: "#F7DF1E",
   typescript: "#3178C6",
@@ -817,11 +717,6 @@ function fmtTime(s) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   SUB-COMPONENTS
-══════════════════════════════════════════════════════════════════ */
-
-/** Output stripe above the output panel */
 function OutStripe({ status, runMs }) {
   if (status === "idle")
     return (
@@ -866,9 +761,6 @@ function OutStripe({ status, runMs }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   MAIN PAGE
-══════════════════════════════════════════════════════════════════ */
 export default function ProblemPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -880,7 +772,7 @@ export default function ProblemPage() {
   const [code, setCode] = useState(PROBLEMS["two-sum"].starterCode.javascript);
   const [output, setOutput] = useState(null);
   const [running, setRunning] = useState(false);
-  const [status, setStatus] = useState("idle"); // idle | running | passed | failed
+  const [status, setStatus] = useState("idle");
   const [elapsed, setElapsed] = useState(0);
   const [ticking, setTicking] = useState(true);
   const [runMs, setRunMs] = useState(null);
@@ -893,7 +785,7 @@ export default function ProblemPage() {
   const prob = PROBLEMS[probId];
   const idx = allProblems.findIndex((p) => p.id === probId);
   const axios = useAxios();
-  /* ── timer ── */
+
   useEffect(() => {
     clearInterval(timerRef.current);
     if (ticking)
@@ -901,7 +793,6 @@ export default function ProblemPage() {
     return () => clearInterval(timerRef.current);
   }, [ticking]);
 
-  /* ── route sync ── */
   useEffect(() => {
     if (id && PROBLEMS[id]) {
       setProbId(id);
@@ -914,7 +805,6 @@ export default function ProblemPage() {
     }
   }, [id, lang]);
 
-  /* ── close dropdown on outside click ── */
   useEffect(() => {
     const h = (e) => {
       if (ddRef.current && !ddRef.current.contains(e.target)) setDdOpen(false);
@@ -1000,7 +890,6 @@ export default function ProblemPage() {
     }
   };
 
-  /* ── status config ── */
   const SP = {
     idle: { lbl: "Ready", Icon: ZapIcon, cls: "ps-idle" },
     running: {
@@ -1013,9 +902,6 @@ export default function ProblemPage() {
     failed: { lbl: "Wrong Answer", Icon: XCircleIcon, cls: "ps-failed" },
   }[status];
 
-  /* ══════════════════════════════════════════════════════════════════
-     RENDER
-  ══════════════════════════════════════════════════════════════════ */
   return (
     <>
       <style>{css}</style>
@@ -1042,7 +928,6 @@ export default function ProblemPage() {
             </Link>
           </div>
 
-          {/* Center — problem navigator */}
           <div className="tb-center">
             <button
               className="pp-arrow"
@@ -1106,9 +991,8 @@ export default function ProblemPage() {
             </button>
           </div>
 
-          {/* Right cluster */}
           <div className="tb-right">
-            {/* Timer */}
+        
             <button
               className={`pp-timer ${ticking ? "ticking" : ""}`}
               onClick={() => setTicking((t) => !t)}
@@ -1118,13 +1002,11 @@ export default function ProblemPage() {
               {fmtTime(elapsed)}
             </button>
 
-            {/* Status */}
             <div className={`pp-status ${SP.cls}`}>
               <SP.Icon size={11} className={SP.spin ? "spin" : ""} />
               {SP.lbl}
             </div>
 
-            {/* Run */}
             <button className="pp-run" onClick={runCode} disabled={running}>
               {running ? (
                 <>
@@ -1140,17 +1022,14 @@ export default function ProblemPage() {
             <UserButton afterSignOutUrl="/" />
           </div>
         </header>
-
-        {/* ══ BODY — horizontal resizable split ══ */}
         <div className="pp-body">
           <PanelGroup
             direction="horizontal"
             style={{ height: "100%", gap: "0" }}
           >
-            {/* ── LEFT PANEL — problem description ── */}
             <Panel defaultSize={38} minSize={28} maxSize={55}>
               <div className="gc" style={{ height: "100%" }}>
-                {/* Header */}
+  
                 <div className="gc-head">
                   <div
                     className={`gc-tab ${leftTab === "problem" ? "on" : ""}`}
@@ -1174,7 +1053,6 @@ export default function ProblemPage() {
                   </div>
                 </div>
 
-                {/* Scrollable description */}
                 <div className="gc-body">
                   <ProblemDescription
                     problem={prob}
@@ -1186,10 +1064,8 @@ export default function ProblemPage() {
               </div>
             </Panel>
 
-            {/* ── RESIZE HANDLE (horizontal) ── */}
             <PanelResizeHandle className="rh-v" />
 
-            {/* ── RIGHT PANEL — editor + output stacked ── */}
             <Panel minSize={38}>
               <PanelGroup direction="vertical" style={{ height: "100%" }}>
                 {/* Editor */}
@@ -1200,7 +1076,6 @@ export default function ProblemPage() {
                         <Code2Icon size={11} /> Editor
                       </div>
                       <div className="gc-head-r">
-                        {/* Language color pip */}
                         <div className="lang-badge">
                           <div
                             className="l-pip"
@@ -1236,10 +1111,8 @@ export default function ProblemPage() {
                   </div>
                 </Panel>
 
-                {/* ── RESIZE HANDLE (vertical) ── */}
                 <PanelResizeHandle className="rh-h" />
 
-                {/* Output */}
                 <Panel minSize={18}>
                   <div className="gc" style={{ height: "100%" }}>
                     <OutStripe status={status} runMs={runMs} />
