@@ -12,44 +12,56 @@ function useStreamClient(session, loadingSession) {
   const [call, setCall] = useState(null);
   const [isInitializingCall, setIsInitializingCall] = useState(true);
 
-  useEffect(() => {
-    let videoCall = null;
+useEffect(() => {
+  if (loadingSession || !session || !session.callId || !user) {
+    console.log("Waiting for session/user...");
+    return;
+  }
 
-    const init = async () => {
-      try {
-        if (!session || loadingSession) return;
-        if (!session.callId) return;
-        if (!user) return;
+  let videoCall = null;
 
-        const clerkToken = await getToken();
+  const init = async () => {
+    try {
+      console.log("STEP 1: session", session);
+      console.log("STEP 2: user", user);
 
-        const res = await fetch(
-          "https://intervue-t8xv.onrender.com/api/chat/token",
-          {
-            headers: {
-              Authorization: `Bearer ${clerkToken}`,
-            },
-          }
-        );
+      const clerkToken = await getToken();
+      console.log("STEP 3: clerk token OK");
 
-        if (!res.ok) throw new Error("Token fetch failed");
-
-        const { token, apiKey } = await res.json();
-
-        clientInstance = new StreamVideoClient({
-          apiKey,
-          user: {
-            id: user.id,
-            name: user.fullName || "User",
-            image: user.imageUrl,
+      const res = await fetch(
+        "https://intervue-t8xv.onrender.com/api/chat/token",
+        {
+          headers: {
+            Authorization: `Bearer ${clerkToken}`,
           },
-          token,
-        });
+        }
+      );
 
-        setStreamClient(clientInstance);
+      console.log("STEP 4:", res.status);
 
-        videoCall = clientInstance.call("default", session.callId);
-        await videoCall.join({
+      if (!res.ok) throw new Error("Token fetch failed");
+
+      const { token, apiKey } = await res.json();
+
+      clientInstance = new StreamVideoClient({
+        apiKey,
+        user: {
+          id: user.id,
+          name: user.fullName || "User",
+          image: user.imageUrl,
+        },
+        token,
+      });
+
+      console.log("STEP 5: client created");
+
+      setStreamClient(clientInstance);
+
+      videoCall = clientInstance.call("default", session.callId);
+
+      console.log("STEP 6: call created");
+
+await videoCall.join({
   create: true,
   audio: true,
   video: true,
@@ -58,28 +70,30 @@ function useStreamClient(session, loadingSession) {
 await videoCall.microphone.enable();
 await videoCall.camera.enable();
 
-await videoCall.startPublishing();
+      await videoCall.camera.enable();
+await videoCall.microphone.enable();
 
+      console.log("STEP 7: joined");
 
-        setCall(videoCall);
-      } catch (err) {
-        console.error("VIDEO ERROR:", err);
-      } finally {
-        setIsInitializingCall(false);
-      }
-    };
+      setCall(videoCall);
+    } catch (err) {
+      console.error("VIDEO ERROR:", err);
+    } finally {
+      setIsInitializingCall(false);
+    }
+  };
 
-    init();
+  init();
 
-    return () => {
-      (async () => {
-        try {
-          if (videoCall) await videoCall.leave();
-          if (clientInstance) await clientInstance.disconnectUser();
-        } catch {}
-      })();
-    };
-  }, [session, loadingSession, user]);
+  return () => {
+    (async () => {
+      try {
+        if (videoCall) await videoCall.leave();
+        if (clientInstance) await clientInstance.disconnectUser();
+      } catch {}
+    })();
+  };
+}, [session, loadingSession, user]);
 
   return {
     streamClient,

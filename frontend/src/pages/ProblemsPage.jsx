@@ -54,7 +54,6 @@ const css = `
     opacity: 0.022; pointer-events: none; z-index: 9999;
   }
 
-  /* ── NAV ── */
   .plnav {
     position: sticky; top: 0; z-index: 200;
     height: 60px;
